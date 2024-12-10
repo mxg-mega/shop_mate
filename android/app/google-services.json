@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "181318808210",
+    "project_id": "matjar-7419d",
+    "storage_bucket": "matjar-7419d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:181318808210:android:56ad7bfe4a636b17cfac4b",
+        "android_client_info": {
+          "package_name": "com.matjar.shopmate"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCvXFTACE5exJm0NqeJpONRp8mliWsJVHY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
