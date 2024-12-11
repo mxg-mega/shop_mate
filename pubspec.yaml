@@ -26,6 +26,7 @@ dependencies:
     sdk: flutter
 
   cupertino_icons: ^1.0.6
+  lucide_icons: ^0.257.0
   provider: ^6.1.2
   http: ^1.2.2
   shared_preferences: ^2.3.3
@@ -35,6 +36,8 @@ dependencies:
   flutter_screenutil: ^5.9.3
   flutter_svg: ^2.0.16
   fl_chart: ^0.69.2
+  firebase_auth: ^5.3.4
+  cloud_firestore: ^5.5.1
 
 dev_dependencies:
   flutter_test:

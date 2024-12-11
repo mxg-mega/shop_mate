@@ -1,12 +1,17 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shop_mate/core/themes/provider/theme_provider.dart';
+import 'package:shop_mate/firebase_options.dart';
 import 'package:shop_mate/screens/home/home_screen.dart';
 import 'package:shop_mate/screens/login/login_screen.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 
 Future<void> main() async {
+  
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+
   runApp(
     MultiProvider(
       providers: [
@@ -38,10 +43,11 @@ class MyApp extends StatelessWidget {
     // );
     return ShadApp.material(
       debugShowCheckedModeBanner: false,
-      title: 'SnapInk - Take beautiful snaps for sharing',
       theme: ShadThemeData(
         brightness: Brightness.light,
-        colorScheme: ShadSlateColorScheme.light(background: Colors.white, ),
+        colorScheme: const ShadSlateColorScheme.light(
+          background: Colors.white,
+        ),
       ),
       /*darkTheme: ShadThemeData(
         colorScheme: const ShadSlateColorScheme.light(),

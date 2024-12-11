@@ -13,8 +13,11 @@ class HomeScreen extends StatelessWidget {
     final theme = ShadTheme.of(context);
 
     return ResponsiveScaffold(
-      title: const Text("M A T J A R"),
-      drawer: Expanded(flex: 2,child: myDrawer(context)),
+      title: Text(
+        "M A T J A R",
+        style: TextStyle(fontWeight: FontWeight.bold),
+      ),
+      drawer: Expanded(flex: 2, child: myDrawer(context)),
       actions: [
         ThemeToggle(),
       ],
@@ -55,16 +58,14 @@ class HomeScreen extends StatelessWidget {
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
-        selectedItemColor: theme.colorScheme.selection,
+        selectedItemColor: theme.colorScheme.primary,
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.home_outlined),
             label: "HOME",
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.shopping_bag_outlined),
-            label: "INVENTORY"
-          ),
+              icon: Icon(Icons.shopping_bag_outlined), label: "INVENTORY"),
         ],
       ),
     );

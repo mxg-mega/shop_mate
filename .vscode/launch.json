@@ -5,6 +5,16 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Flutter",
+            "type": "dart",
+            "request": "launch",
+            "program": "lib/main.dart",
+            "args": [
+                "--verbose",
+                "--observatory-port=50300",
+            ],
+        },
+        {
             "name": "shop_mate",
             "request": "launch",
             "type": "dart",
