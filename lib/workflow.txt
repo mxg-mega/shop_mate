@@ -6,6 +6,8 @@
 
 
 
+// Decided App Name 'NaijaBiz'
+
 // How do you handle returned goods ?
 // enums for roll, pack, cartons etc
 // Goods Exchange paracetamol for diclofenac and vice versar and etc

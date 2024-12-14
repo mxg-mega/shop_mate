@@ -9,7 +9,7 @@ class ResponsiveScaffold extends StatelessWidget {
     this.actions,
     this.drawer,
     this.bottomNavigationBar,
-    this.navigationRail,
+    required this.navigationRail,
   });
 
   final Widget? title;
@@ -17,7 +17,7 @@ class ResponsiveScaffold extends StatelessWidget {
   final List<Widget>? actions;
   final Widget? drawer;
   final BottomNavigationBar? bottomNavigationBar;
-  final Widget? navigationRail;
+  final Widget navigationRail;
 
   @override
   Widget build(BuildContext context) {
@@ -35,29 +35,33 @@ class ResponsiveScaffold extends StatelessWidget {
         appBar: AppBar(
           title: title,
           actions: actions,
+          leading: IconButton(
+            padding: EdgeInsets.only(left: 25),
+            icon: Icon(Icons.menu),
+            onPressed: () {},
+          ),
         ),
         body: Row(
           children: [
-            if (navigationRail != null) navigationRail!, 
+            navigationRail,
             Expanded(
-              flex: navigationRail == null ? 1 : 7,
+              flex: 5,
               child: body,
             ),
           ],
         ),
       ),
       desktop: Scaffold(
+        appBar: AppBar(
+          title: title,
+          actions: actions,
+        ),
         body: Row(
           children: [
-            if (navigationRail != null) navigationRail!,
+            navigationRail,
             Expanded(
-              child: Scaffold(
-                appBar: AppBar(
-                  title: title,
-                  actions: actions,
-                ),
-                body: body,
-              ),
+              flex: 7,
+              child: body,
             ),
           ],
         ),

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
-import 'package:shop_mate/core/themes/provider/theme_provider.dart';
+import 'package:shop_mate/providers/theme_provider.dart';
 
 class ThemeToggle extends StatelessWidget {
   const ThemeToggle({super.key});

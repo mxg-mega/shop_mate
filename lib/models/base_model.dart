@@ -42,13 +42,33 @@ class BaseModel {
       'id': id,
       'name': name,
       'createdAt': createdAt?.toIso8601String(),
-      'updatedAt':updatedAt?.toIso8601String(),
+      'updatedAt': updatedAt?.toIso8601String(),
     };
   }
 
   /// Converts the object to a CSV-formatted string.
   String toCSV() {
     return '$id , $name , ${createdAt?.toIso8601String()} , ${updatedAt?.toIso8601String()}';
+  }
+
+  static void validateCSVParts(List<String> parts, int expectedCount) {
+    if (parts.length != expectedCount) {
+      throw FormatException(
+          "Invalid CSV: expected $expectedCount fields but found ${parts.length}.");
+    }
+  }
+
+  /// Parses a [BaseModel] object from a CSV-formatted string.
+  factory BaseModel.fromCSV(String csv) {
+    final parts = csv.split(',').map((part) => part.trim()).toList();
+    validateCSVParts(parts, 4);
+
+    return BaseModel(
+      id: parts[0],
+      name: parts[1],
+      createdAt: DateTime.tryParse(parts[2]),
+      updatedAt: DateTime.tryParse(parts[3]),
+    );
   }
 
   /// Creates a new instance with updated fields while retaining unchanged ones.

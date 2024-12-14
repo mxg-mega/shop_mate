@@ -1,23 +1,24 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:shop_mate/core/themes/provider/theme_provider.dart';
+import 'package:shop_mate/providers/auth_provider.dart';
+import 'package:shop_mate/providers/theme_provider.dart';
 import 'package:shop_mate/firebase_options.dart';
 import 'package:shop_mate/screens/home/home_screen.dart';
 import 'package:shop_mate/screens/login/login_screen.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 
 Future<void> main() async {
-  
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
 
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider<ThemeProvider>(
-          create: (context) => ThemeProvider(),
-        ),
+        ChangeNotifierProvider<ThemeProvider>(create: (_) => ThemeProvider()),
+        ChangeNotifierProvider<AuthProvider>(create: (_) => AuthProvider()),
       ],
       child: const MyApp(),
     ),
@@ -55,7 +56,7 @@ class MyApp extends StatelessWidget {
       ),*/
       themeMode: themeProvider.themeMode,
       home: const SafeArea(
-        child: HomeScreen(),
+        child: LoginScreen(),
       ),
     );
   }
