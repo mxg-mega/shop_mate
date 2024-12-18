@@ -8,10 +8,20 @@ class StorageServices {
   Future<String> uploadProfilePicture(File file, String userID) async {
     try {
       final ref = _storage.ref().child('profilePictures/$userID.jpg');
-      final uploadTask = await ref.putFile(file);
+      await ref.putFile(file);
       return ref.getDownloadURL();
     } catch (e) {
       throw Exception('Failed to upload profile picture: $e');
+    }
+  }
+
+  /// Gets the default profile picture URL.
+  Future<String> getDefaultProfilePicture() async {
+    try {
+      final ref = _storage.ref().child('profilePictures/default.jpg');
+      return ref.getDownloadURL();
+    } catch (e) {
+      throw Exception('Failed to fetch default profile picture: $e');
     }
   }
 }

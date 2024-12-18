@@ -18,7 +18,7 @@ class _TabletScaffoldState extends State<TabletScaffold> {
       children: [
         Expanded(
           flex: 2,
-          child: myDrawer(context),
+          child: MyDrawer(),
         ),
         Expanded(
           flex: 5,

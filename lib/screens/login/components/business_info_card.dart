@@ -2,27 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 import 'package:shop_mate/models/users/constants_enums.dart';
-import 'package:shop_mate/providers/auth_provider.dart';
+import 'package:shop_mate/providers/authentication_provider.dart';
 import 'package:shop_mate/screens/login/components/constants.dart';
 
 class BusinessInfoCard extends StatelessWidget {
   BusinessInfoCard({
     super.key,
     required this.cardTitle,
-    required this.businessInfoControllers,
   });
   final String cardTitle;
-  List<TextEditingController> businessInfoControllers;
 
   @override
   Widget build(BuildContext context) {
     final theme = ShadTheme.of(context);
-    ShadPopoverController businessTypeController = ShadPopoverController();
-    TextEditingController nameController = TextEditingController();
-    TextEditingController phoneController = TextEditingController();
-    TextEditingController addressController = TextEditingController();
-    TextEditingController emailController = TextEditingController();
-    final _authProv = Provider.of<AuthProvider>(context);
+
+    final authProv = Provider.of<AuthenticationProvider>(context);
 
     return ConstrainedBox(
       constraints: BoxConstraints(maxWidth: 350),
@@ -37,10 +31,14 @@ class BusinessInfoCard extends StatelessWidget {
             ShadInputFormField(
               label: importantLabel('Business Name', context),
               placeholder: const Text('Business Name'),
-              controller: nameController,
+              controller: authProv.bizNameController,
               keyboardType: TextInputType.name,
-              validator: (value) =>
-                  validate(value, 'Please Enter Business Name', 0),
+              validator: (value) => validate(
+                  value,
+                  'Please Enter Business Name',
+                  0,
+                  authProv.bizInfo,
+                  {'name': value}),
             ),
             const Perimeter(height: 3),
             ShadInputFormField(
@@ -48,12 +46,13 @@ class BusinessInfoCard extends StatelessWidget {
               placeholder: Text('Email'),
               keyboardType: TextInputType.emailAddress,
               validator: (value) {
-                if (value.isEmpty ||
-                    value.contains(
+                if (value.length > 2 &&
+                    !value.contains(
                         RegExp(r'^[\w-\.]+@[a-zA-Z]+\.[a-zA-Z]{2,4}$'))) {
-                  return null;
+                  return 'Enter a valid Email Address or leave Empty if the same as from user information';
                 } else {
-                  return 'Enter a valid email or leave empty if same as user email';
+                  authProv.bizInfo.addAll({'email': value});
+                  return null;
                 }
               },
             ),
@@ -62,9 +61,13 @@ class BusinessInfoCard extends StatelessWidget {
               label: Text('Phone Number'),
               placeholder: Text('Phone Number'),
               keyboardType: TextInputType.phone,
+              controller: authProv.bizPhoneNumberController,
               validator: (value) {
-                if (value.length < 10 && value.contains(RegExp(r'[0-9]'))) {
-                  return 'Please Enter valid Phone Number';
+                if (value.length > 2 &&
+                    !value.contains(RegExp(r'^(\+234|0)([789]\d{9})$'))) {
+                  return 'Please Enter valid Phone Number or Leave empty if the same as user information';
+                } else {
+                  authProv.bizInfo.addAll({'phoneNumber': value});
                 }
                 return null;
               },
@@ -74,14 +77,20 @@ class BusinessInfoCard extends StatelessWidget {
               label: importantLabel('Address', context),
               placeholder: Text('Address'),
               keyboardType: TextInputType.streetAddress,
-              validator: (v) =>
-                  validate(v, 'Please Enter business Address', 15),
+              controller: authProv.addressController,
+              validator: (v) => validate(
+                v,
+                'Please Enter business Address',
+                15,
+                authProv.bizInfo,
+                {'address': v},
+              ),
             ),
             const Perimeter(height: 3),
             ShadSelectFormField<BusinessCategories>(
               id: 'business_type',
               label: importantLabel('Select Business Type', context),
-              controller: businessTypeController,
+              onChanged: (c) => authProv.setCategory(c!),
               itemCount: BusinessCategories.values.length,
               initialValue: BusinessCategories.none,
               options: BusinessCategories.values
@@ -95,9 +104,12 @@ class BusinessInfoCard extends StatelessWidget {
                       ? const Text('Select Your Business Type')
                       : Text(value.name),
               validator: (value) => validate(
-                  value as BusinessCategories,
-                  'Please Choose your Business Category',
-                  BusinessCategories.none),
+                value as BusinessCategories,
+                'Please Choose your Business Category',
+                BusinessCategories.none,
+                authProv.bizInfo,
+                {'type': value},
+              ),
             ),
           ],
         ),

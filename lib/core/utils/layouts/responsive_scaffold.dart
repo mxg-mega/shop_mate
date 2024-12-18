@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:provider/provider.dart';
 import 'package:shop_mate/core/utils/layouts/responsive_layout.dart';
+import 'package:shop_mate/providers/home_screen_provider.dart';
 
 class ResponsiveScaffold extends StatelessWidget {
   const ResponsiveScaffold({
@@ -7,7 +10,7 @@ class ResponsiveScaffold extends StatelessWidget {
     this.title,
     required this.body,
     this.actions,
-    this.drawer,
+    required this.drawer,
     this.bottomNavigationBar,
     required this.navigationRail,
   });
@@ -15,7 +18,7 @@ class ResponsiveScaffold extends StatelessWidget {
   final Widget? title;
   final Widget body;
   final List<Widget>? actions;
-  final Widget? drawer;
+  final Widget drawer;
   final BottomNavigationBar? bottomNavigationBar;
   final Widget navigationRail;
 
@@ -35,10 +38,15 @@ class ResponsiveScaffold extends StatelessWidget {
         appBar: AppBar(
           title: title,
           actions: actions,
-          leading: IconButton(
-            padding: EdgeInsets.only(left: 25),
-            icon: Icon(Icons.menu),
-            onPressed: () {},
+          leading: Padding(
+            padding: EdgeInsets.only(left: 7.0.w),
+            child: IconButton(
+              icon: const Icon(Icons.menu),
+              onPressed: () {
+                Provider.of<HomeScreenProvider>(context, listen: false)
+                    .toggleSideBar();
+              },
+            ),
           ),
         ),
         body: Row(
@@ -55,6 +63,18 @@ class ResponsiveScaffold extends StatelessWidget {
         appBar: AppBar(
           title: title,
           actions: actions,
+          leadingWidth: 20.w,
+          automaticallyImplyLeading: true,
+          leading: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: IconButton(
+              icon: const Icon(Icons.menu),
+              onPressed: () {
+                Provider.of<HomeScreenProvider>(context, listen: false)
+                    .toggleSideBar();
+              },
+            ),
+          ),
         ),
         body: Row(
           children: [

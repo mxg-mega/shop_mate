@@ -7,6 +7,7 @@ class Business extends BaseModel {
   final String phone;
   final BusinessCategories businessType;
   final String? token;
+  final int? numberOfEmployee;
 
   Business({
     required super.id,
@@ -16,6 +17,7 @@ class Business extends BaseModel {
     required this.address,
     required this.businessType,
     this.token,
+    this.numberOfEmployee = 1,
   });
 
   factory Business.fromJson(Map<String, dynamic> json) {

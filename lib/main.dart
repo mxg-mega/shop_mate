@@ -1,11 +1,13 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
-import 'package:shop_mate/providers/auth_provider.dart';
+import 'package:shop_mate/providers/authentication_provider.dart';
+import 'package:shop_mate/providers/home_screen_provider.dart';
+import 'package:shop_mate/providers/session_provider.dart';
 import 'package:shop_mate/providers/theme_provider.dart';
 import 'package:shop_mate/firebase_options.dart';
-import 'package:shop_mate/screens/home/home_screen.dart';
-import 'package:shop_mate/screens/login/login_screen.dart';
+import 'package:shop_mate/screens/auth_screen.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 
 Future<void> main() async {
@@ -18,7 +20,12 @@ Future<void> main() async {
     MultiProvider(
       providers: [
         ChangeNotifierProvider<ThemeProvider>(create: (_) => ThemeProvider()),
-        ChangeNotifierProvider<AuthProvider>(create: (_) => AuthProvider()),
+        ChangeNotifierProvider<AuthenticationProvider>(
+            create: (_) => AuthenticationProvider()),
+        ChangeNotifierProvider<SessionProvider>(
+            create: (_) => SessionProvider()),
+        ChangeNotifierProvider<HomeScreenProvider>(
+            create: (_) => HomeScreenProvider()),
       ],
       child: const MyApp(),
     ),
@@ -32,16 +39,8 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
+    ScreenUtil.init(context);
 
-    // return MaterialApp(
-    // debugShowCheckedModeBanner: false,
-    // theme: themeProvider.lightTheme,
-    // darkTheme: themeProvider.darkTheme,
-    // themeMode: themeProvider.themeMode,
-    // home: SafeArea(
-    //   child: LoginScreen(),
-    // ),
-    // );
     return ShadApp.material(
       debugShowCheckedModeBanner: false,
       theme: ShadThemeData(
@@ -50,13 +49,15 @@ class MyApp extends StatelessWidget {
           background: Colors.white,
         ),
       ),
-      /*darkTheme: ShadThemeData(
-        colorScheme: const ShadSlateColorScheme.light(),
+      darkTheme: ShadThemeData(
+        colorScheme: const ShadSlateColorScheme.dark(
+          background: Color.fromARGB(255, 12, 48, 77),
+        ),
         brightness: Brightness.dark,
-      ),*/
+      ),
       themeMode: themeProvider.themeMode,
       home: const SafeArea(
-        child: LoginScreen(),
+        child: AuthScreen(),
       ),
     );
   }

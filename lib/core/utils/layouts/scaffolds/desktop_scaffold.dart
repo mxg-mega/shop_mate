@@ -21,7 +21,7 @@ class _DesktopScaffoldState extends State<DesktopScaffold> {
           children: [
             Expanded(
               flex: 2,
-              child: myDrawer(context),
+              child: MyDrawer(),
             ),
             Expanded(
               flex: 5,

@@ -1,6 +1,8 @@
 import 'package:provider/provider.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 import 'package:flutter/material.dart';
+import 'package:shop_mate/core/error/error_toaster.dart';
+import 'package:shop_mate/providers/authentication_provider.dart';
 import 'package:shop_mate/providers/theme_provider.dart';
 
 class SignInScreen extends StatelessWidget {
@@ -8,11 +10,13 @@ class SignInScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    TextEditingController? _emailController;
-    TextEditingController? _pwController;
+    final emailController = TextEditingController();
+    final pwController = TextEditingController();
     final formKey = GlobalKey<ShadFormState>();
 
-    var themeProv = Provider.of<ThemeProvider>(context);
+    final themeProv = Provider.of<ThemeProvider>(context);
+    final authProv = Provider.of<AuthenticationProvider>(context);
+
     return ShadForm(
       key: formKey,
       child: ConstrainedBox(
@@ -27,18 +31,18 @@ class SignInScreen extends StatelessWidget {
                 placeholder: const Text('Email'),
                 keyboardType: TextInputType.emailAddress,
                 decoration: ShadDecoration(
-                  shadows: ShadShadows.regular,
+                  shadows: ShadShadows.md,
                   color: themeProv.themeMode == ThemeMode.dark
                       ? Colors.white30
                       : null,
                 ),
-                controller: _emailController,
+                controller: emailController,
                 validator: (v) {
                   if (v.length < 2) {
                     return 'Please Input your Email Address';
                   }
-                  if (!v.contains(RegExp(
-                      r'^[A-Za-z0-9._%+-]@[a-zA-Z0-9]+\.[a-zA-Z]{2,}$'))) {
+                  if (!v.contains(
+                      RegExp(r'^[\w-\.]+@[a-zA-Z]+\.[a-zA-Z]{2,4}$'))) {
                     return 'Please Input a valid Email Address';
                   }
                   return null;
@@ -56,11 +60,11 @@ class SignInScreen extends StatelessWidget {
                     color: themeProv.themeMode == ThemeMode.dark
                         ? Colors.white30
                         : null),
-                controller: _pwController,
+                controller: pwController,
                 obscureText: true,
                 validator: (v) {
-                  if (v.length < 8) {
-                    return 'Please Input at least 8 Characters Long';
+                  if (v.length < 2) {
+                    return 'Please Input your Password';
                   }
                   return null;
                 },
@@ -78,6 +82,14 @@ class SignInScreen extends StatelessWidget {
                 onPressed: () {
                   if (formKey.currentState!.saveAndValidate()) {
                     print('Validation Success');
+                    authProv.signIn(
+                        emailController.text, pwController.text, context);
+                    if (authProv.isLoading) {
+                      ErrorToaster(
+                        context: context,
+                        message: 'User Signing In...',
+                      );
+                    }
                   } else {
                     print("Validation Failed");
                   }

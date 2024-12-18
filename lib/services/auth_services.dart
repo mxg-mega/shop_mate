@@ -12,8 +12,6 @@ import 'package:shop_mate/services/storage_services.dart';
 class AuthService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  // final StorageServices _storageServices = StorageServices();
-  // final File defaultProfilePic = File(kImages.defaultProfilePic);
 
   final FirebaseService<UserModel> userService;
 
@@ -32,7 +30,7 @@ class AuthService {
   }) async {
     final hashedPassword = UserModel.hashPassword(password);
     final newUser = UserModel(
-      id: _firestore.collection('users').doc().id,
+      id: _firestore.collection(Storage.users).doc().id,
       name: name,
       email: email,
       password: hashedPassword,
@@ -55,6 +53,7 @@ class AuthService {
         email: email,
         password: password,
       );
+      print(userCredential.user.toString());
       return userCredential.user;
     } catch (e) {
       throw Exception('Failed to sign in: $e');
@@ -121,4 +120,8 @@ class AuthService {
     final user = FirebaseAuth.instance.currentUser;
     return user?.emailVerified ?? false;
   }
+
+  // Map<String, dynamic> userLookupByEmail(String email){
+  //   final querySnap
+  // }
 }

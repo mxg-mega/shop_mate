@@ -16,7 +16,7 @@ class _MobileScaffoldState extends State<MobileScaffold> {
 
     return Scaffold(
       backgroundColor: ShadTheme.of(context).colorScheme.background,
-      drawer: myDrawer(context),
+      drawer: MyDrawer(),
       // bottomNavigationBar: BottomNavigationBar(
       //   items: [
       //     BottomNavigationBarItem(

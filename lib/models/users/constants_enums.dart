@@ -1,5 +1,22 @@
 import 'package:flutter/material.dart';
 
+enum SubscriptionTypes{
+  free,
+  basic,
+  standard,
+  premium,
+}
+
+enum Features{
+  dashboard,
+  inventory,
+  sales,
+  analytics,
+  creditManagement,
+  zakatTracker,
+  settings,
+}
+
 enum RoleTypes {
   none,
   admin,
