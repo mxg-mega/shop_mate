@@ -1,8 +1,14 @@
 // Setting up firebase - D
-// setting up responsive design
-// seting up login pages
-// Set up Themes
-// setting up firebase backend (models included)
+// setting up responsive design - hD
+// setting up login pages - D
+// Set up Themes - hD
+// setting up firebase backend (models included) - P
+
+// Create a sidebar item builder
+// 
+
+// how would you get the users name and information making it static across teh session
+// follow the UI Mock up by 
 
 
 

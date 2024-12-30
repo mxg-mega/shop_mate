@@ -85,4 +85,5 @@ class DefaultFirebaseOptions {
     storageBucket: 'matjar-7419d.firebasestorage.app',
     measurementId: 'G-VLX98Y5V19',
   );
+
 }

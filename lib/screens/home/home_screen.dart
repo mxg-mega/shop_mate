@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
@@ -7,8 +8,12 @@ import 'package:shop_mate/core/utils/layouts/responsive_layout.dart';
 import 'package:shop_mate/core/utils/layouts/responsive_scaffold.dart';
 import 'package:shop_mate/core/utils/constants.dart';
 import 'package:shop_mate/models/users/constants_enums.dart';
-import 'package:shop_mate/providers/home_screen_provider.dart';
+import 'package:shop_mate/providers/authentication_provider.dart';
+import 'package:shop_mate/providers/sidebar_provider.dart';
 import 'package:shop_mate/providers/session_provider.dart';
+import 'package:shop_mate/providers/theme_provider.dart';
+import 'package:shop_mate/screens/home/components/my_card.dart';
+import 'package:shop_mate/screens/home/components/my_sidebar.dart';
 import 'package:shop_mate/services/auth_services.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -19,10 +24,13 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  final authService = MyAuthService();
+
   @override
   Widget build(BuildContext context) {
     final theme = ShadTheme.of(context);
     final sessionProv = Provider.of<SessionProvider>(context);
+    final sidebarProv = Provider.of<SidebarProvider>(context);
 
     return ResponsiveScaffold(
       title: const Text(
@@ -30,9 +38,10 @@ class _HomeScreenState extends State<HomeScreen> {
         style: TextStyle(fontWeight: FontWeight.bold),
       ),
       drawer: const MyDrawer(),
-      navigationRail: AnimatedSwitcher(
-        child: myNavigationRail(context),
+      navigationRail: AnimatedContainer(
         duration: Duration(milliseconds: 300),
+        width: sidebarProv.sidebarOpen ? 250 : 60,
+        child: MySidebar(),
       ),
       actions: [
         const ThemeToggle(),
@@ -43,42 +52,44 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           onTap: () {
             sessionProv.auth.signOut();
+            authService.signOut();
           },
         ),
-      ],
-      body: GridView(
-        padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 10.0.h),
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: ResponsiveLayout.isMobile(context) ? 1 : 2,
-          crossAxisSpacing: 7,
-          mainAxisSpacing: 7,
-          mainAxisExtent: 200,
+        const Perimeter(
+          width: 2,
         ),
-        shrinkWrap: true,
+      ],
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          ShadCard(
-            shadows: theme.cardTheme.shadows,
-            backgroundColor: theme.cardTheme.backgroundColor,
-            title: Text("N300,000.00", style: theme.textTheme.h3),
+          Padding(
+            padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.5.w),
+            child: Text(
+              'Welcome to Your DashBoard ${MyAuthService().getCurrentUser()?.email.toString()}',
+              style: TextStyle(
+                fontSize: theme.textTheme.h1.fontSize,
+                fontFamily: theme.textTheme.family,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
-          ShadCard(
-            shadows: theme.cardTheme.shadows,
-            backgroundColor: theme.cardTheme.backgroundColor,
-            title: Text("N300,000.00", style: theme.textTheme.h3),
-          ),
-          ShadCard(
-            shadows: theme.cardTheme.shadows,
-            backgroundColor: theme.cardTheme.backgroundColor,
-            title: Text("N300,000.00", style: theme.textTheme.h3),
-          ),
-          ShadCard(
-            title: Text("N3,000.00", style: theme.textTheme.h3),
-          ),
-          ShadCard(
-            title: Text("N2000.00", style: theme.textTheme.h3),
-          ),
-          ShadCard(
-            title: Text("N90,000.00", style: theme.textTheme.h3),
+          GridView(
+            padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 10.0.h),
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: ResponsiveLayout.isMobile(context) ? 1 : 2,
+              crossAxisSpacing: 15,
+              mainAxisSpacing: 7,
+              mainAxisExtent: 200,
+            ),
+            shrinkWrap: true,
+            children: [
+              MyCard(
+                title: Text("Overall Products", style: theme.textTheme.h3),
+              ),
+              MyCard(
+                title: Text("Daily Profits", style: theme.textTheme.h3),
+              ),
+            ],
           ),
         ],
       ),
@@ -102,14 +113,12 @@ class _HomeScreenState extends State<HomeScreen> {
 
   NavigationRail myNavigationRail(BuildContext context) {
     return NavigationRail(
-      indicatorShape: BeveledRectangleBorder(
-          borderRadius: BorderRadius.circular(50),
-          side: BorderSide(
-              width: 150, color: ShadTheme.of(context).colorScheme.selection)),
-      useIndicator: true,
+      indicatorShape: ContinuousRectangleBorder(
+        side: BorderSide(
+            width: 100, color: ShadTheme.of(context).colorScheme.selection),
+      ),
       destinations: [
         NavigationRailDestination(
-          indicatorColor: Colors.red,
           icon: Icon(Icons.home_outlined),
           label: Text(
             'D A S H B O A R D',
@@ -138,8 +147,11 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
       ],
+      onDestinationSelected: (index) {
+        Provider.of<SidebarProvider>(context, listen: false)
+            .setSelectedIndex(index);
+      },
       selectedIndex: 0,
-      extended: Provider.of<HomeScreenProvider>(context).sidebarOpen,
     );
   }
 }

@@ -1,47 +1,49 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:logger/logger.dart';
+import 'package:provider/provider.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 import 'package:shop_mate/core/error/error_toaster.dart';
 import 'package:shop_mate/core/utils/constants.dart';
 import 'package:shop_mate/models/businesses/business_model.dart';
 import 'package:shop_mate/models/users/constants_enums.dart';
 import 'package:shop_mate/models/users/user_model.dart';
+import 'package:shop_mate/providers/session_provider.dart';
 import 'package:shop_mate/services/auth_services.dart';
 import 'package:shop_mate/services/business_services.dart';
 import 'package:shop_mate/services/firebase_services.dart';
 import 'package:shop_mate/services/storage_services.dart';
+import 'package:shop_mate/services/user_services.dart';
+
+import '../models/users/employee_model.dart';
 
 class AuthenticationProvider with ChangeNotifier {
   bool _isLoading = false;
   bool showSignIn = true;
+  String errorMessage = '';
 
   final pwController = TextEditingController();
-  TextEditingController nameController = TextEditingController();
-  TextEditingController emailController = TextEditingController();
-  TextEditingController phoneNumberController = TextEditingController();
+  final nameController = TextEditingController();
+  final emailController = TextEditingController();
+  final phoneNumberController = TextEditingController();
+  final bizNameController = TextEditingController();
+  final addressController = TextEditingController();
+  final bizEmailController = TextEditingController();
+  final bizPhoneNumberController = TextEditingController();
+
   RoleTypes selectedRole = RoleTypes.customer;
 
   Map<String, dynamic> bizInfo = {};
   Map<String, dynamic> userInfo = {};
 
-  TextEditingController bizNameController = TextEditingController();
-  TextEditingController addressController = TextEditingController();
-  TextEditingController bizEmailController = TextEditingController();
-  TextEditingController bizPhoneNumberController = TextEditingController();
   BusinessCategories selectedBusinessCategory = BusinessCategories.other;
 
-  final authService = AuthService(
-    FirebaseService<UserModel>(
-      collectionName: Storage.users,
-      fromJson: (data) => UserModel.fromJson(data),
-    ),
-  );
+  final authService = MyAuthService();
 
-  final bizService = BusinessServices(
-    FirebaseService<Business>(
-      collectionName: Storage.businesses,
-      fromJson: (data) => Business.fromJson(data),
-    ),
-  );
+  final bizService = BusinessServices();
+
+  final userServices = UserServices();
 
   bool get isLoading => _isLoading;
 
@@ -58,63 +60,265 @@ class AuthenticationProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> signIn(
-      String email, String password, BuildContext context) async {
+/*  Future<void> signIn(String identifier, String password, BuildContext context) async {
     _isLoading = true;
     notifyListeners();
+
     try {
-      // Simulate network request
-      await Future.delayed(Duration(seconds: 2));
-      // Handle authentication logic
-      await authService.signIn(email, password);
-      print("User signed in with $email");
+      if (identifier.contains('@') && !identifier.contains('.com')) {
+        // Employee Login
+        final parts = identifier.split('@');
+        final username = parts[0];
+        final businessName = parts[1];
+
+        // Fetch business
+        Business? business = await bizService.getBusinessByName(businessName);
+        if (business == null) throw Exception('Business not found.');
+
+        // Validate employee
+        Employee? employee = business.employees.firstWhere(
+              (e) => e.name == username && UserModel.verifyPassword(password, e.password),
+          orElse: () => null,
+        );
+        if (employee == null) throw Exception('Invalid employee credentials.');
+
+        logger.d("Employee logged in: ${employee.name}");
+        // Set session for employee
+        Provider.of<SessionProvider>(context, listen: false).setSession(
+          role: RoleTypes.staff,
+          userId: employee.id,
+          businessId: business.id,
+        );
+      } else if (identifier.contains('.com')) {
+        // Admin or Customer Login
+        User? firebaseUser = await authService.signIn(identifier, password);
+        if (firebaseUser == null) throw Exception('Invalid admin credentials.');
+
+        logger.d("Admin logged in: ${firebaseUser.email}");
+        // Fetch user data
+        UserModel? user = await UserServices().fetchUserModel(firebaseUser.uid);
+        if (user == null) throw Exception('User data not found.');
+
+        // Set session for admin
+        Provider.of<SessionProvider>(context, listen: false).setSession(
+          role: user.role,
+          userId: user.id,
+          businessId: user.businessID,
+        );
+      } else {
+        throw Exception("Invalid identifier format.");
+      }
     } catch (e) {
-      print("Error signing in: $e");
+      logger.e("Sign-in error: $e");
       ErrorToaster(
-          context: context,
-          message: 'Verification Failed',
-          description: 'Error Signing in',
-          isDestructive: true);
+        context: context,
+        message: "Login Failed",
+        description: e.toString(),
+        isDestructive: true,
+      );
     } finally {
       _isLoading = false;
       notifyListeners();
     }
+  }*/
+
+  Future<void> signInEmployee(String identifier, String password, BuildContext context) async {
+    final parts = identifier.split('@');
+    final username = parts[0];
+    final businessName = parts[1];
+
+    // Fetch business
+    QuerySnapshot businessQuery = await FirebaseFirestore.instance
+        .collection(Storage.businesses)
+        .where('name', isEqualTo: businessName)
+        .get();
+    if (businessQuery.docs.isEmpty) throw Exception('Business not found.');
+
+    // final businessId = businessQuery.docs.first.id;
+    final businessId = await bizService.getBusinessByName(businessName);
+    if (businessId == null) throw Exception("Cannot find business with identifier $businessName");
+
+    // Fetch employee
+    QuerySnapshot employeeQuery = await FirebaseFirestore.instance
+        .collection(Storage.employees)
+        .where('businessId', isEqualTo: businessId)
+        .where('name', isEqualTo: username)
+        .get();
+    if (employeeQuery.docs.isEmpty) throw Exception('Employee not found.');
+
+    final employeeData = employeeQuery.docs.first.data() as Map<String, dynamic>;
+    final employeeModel = Employee.fromJson(employeeData);
+
+    // Verify password
+    if (!UserModel.verifyPassword(password, employeeData['password'])) {
+      throw Exception('Invalid credentials.');
+    }
+
+    // Set session
+    Provider.of<SessionProvider>(context, listen: false).setSession(
+      role: RoleTypes.staff,
+      userId: employeeQuery.docs.first.id,
+      businessId: businessId.id,
+      userData: employeeData,
+      userModel: employeeModel,
+    );
+
+    print("Employee signed in: ${employeeData['name']}");
   }
 
+  Future<void> signInAdminCustomer(String email, String password, BuildContext context, dynamic sessionProvider) async {
+    try {
+      User? firebaseUser = await authService.signIn(email, password);
+      if (firebaseUser == null) throw Exception('Invalid credentials.');
+
+      // Fetch user data
+      /*DocumentSnapshot userDoc = await FirebaseFirestore.instance
+          .collection(Storage.users)
+          .doc(firebaseUser.uid)
+          .get();
+      Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;*/
+
+      final userModel = await userServices.getUserData(firebaseUser.uid);
+      if (userModel == null) throw Exception("Unable to get user with id: ${firebaseUser.uid}");
+
+      // Set session
+      sessionProvider.setSession(
+        role: userModel.role,
+        userId: firebaseUser.uid,
+        businessId: userModel.businessID,
+        userData: userModel.toJson(),
+        userModel: userModel,
+      );
+
+      print("Admin/Customer signed in: ${firebaseUser.email}");
+    } catch (e) {
+      print("Sign-in error: $e");
+    }
+  }
+
+
+  Future<void> saveUserToFirestore(UserModel user) async {
+    try {
+      logger.d("Saving User to fireStore....");
+      await FirebaseFirestore.instance
+          .collection(Storage.users)
+          .doc(user.id)
+          .set(user.toJson());
+      logger.d("User saved successfully: ${user.id}");
+    } catch (e, stackTrace) {
+      logger.e("Error saving user: $e");
+      logger.e(stackTrace);
+      rethrow; // Re-throw the error if needed for higher-level handling.
+    }
+  }
+
+  /// Create user, userModel, businessModel and link them together
   Future<void> signUp(
-      Map<String, dynamic> userInfo, Map<String, dynamic> businessInfo) async {
+    BuildContext context,
+    String email,
+    String password,
+    String name,
+    String phoneNumber,
+    RoleTypes role, {
+    String? businessName,
+    String? businessAddress,
+    String? businessPhone,
+    String? businessEmail,
+    BusinessCategories? businessCategory,
+  }) async {
     _isLoading = true;
     notifyListeners();
-
     try {
-      // Get default profile picture if not provided
-      userInfo['profilePicture'] ??=
-          'assets/images/default_profile_picture.png';
+      await Future.delayed(const Duration(seconds: 5));
 
-      // Create Business Model
-      bizService.createBusiness(
-        name: businessInfo['name'],
-        email: businessInfo['email'] ?? userInfo['email'],
-        phone: businessInfo['phoneNumber'] ?? userInfo['phoneNumber'],
-        address: businessInfo['address'],
-        businessType: businessInfo['type'],
-      );
+      // Sign up user using firebase
+      User? newFireBaseUser = await authService.registerUser(email, password);
 
-      // Create user and register them including the id of the business
-      authService.createUser(
-        email: userInfo['email'],
-        password: userInfo['password'],
-        name: userInfo['name'],
-        role: userInfo['role'],
-        phoneNumber: userInfo['phoneNumber'],
-        businessID: bizService.newBusiness.id,
-        profilePicture: userInfo['profilePicture'],
-      );
+      if (newFireBaseUser != null) {
+        // Step 2: Create UserModel
+        String userID = newFireBaseUser.uid;
+        UserModel newUserModel = authService.createUserModel(
+          id: userID,
+          email: email,
+          password: password,
+          name: name,
+          role: role,
+          phoneNumber: phoneNumber,
+          businessID: '',
+          profilePicture: kImages.defaultProfilePic,
+        );
+        // Save user to database(FireStore)
+        await saveUserToFirestore(newUserModel);
+
+        // Step 3: Handle Business Creation (if admin role)
+        if (role == RoleTypes.admin) {
+          Business newBusiness = bizService.createBusiness(
+            name: businessName!,
+            email: businessEmail ?? email,
+            phone: businessPhone ?? phoneNumber,
+            address: businessAddress!,
+            businessType: businessCategory!,
+            ownerID: newFireBaseUser.uid,
+          );
+
+          newUserModel.businessID = newBusiness.id;
+          await userServices.updateUserInfo(
+              newFireBaseUser.uid, newUserModel.toJson());
+
+          if (role == RoleTypes.admin) bizService.saveToFirebase(newBusiness);
+        }
+        // Success
+        logger.e("User signed up successfully: ${newUserModel.toJson()}");
+        if (context.mounted) {
+          ErrorToaster(
+            context: context,
+            message: "User signed up successfully",
+          );
+        }
+      }
     } catch (e) {
-      print("Error signing up: $e");
+      errorMessage = e.toString();
+      print("Error during sign-up: $e");
+      ErrorToaster(
+        context: context,
+        message: "Error during sign-up:",
+        description: errorMessage,
+        isDestructive: true,
+      );
     } finally {
       _isLoading = false;
       notifyListeners();
     }
   }
+
+  /*Future<void> signIn(String identifier, String password, BuildContext context) async {
+    try {
+      if (identifier.contains('@') && !identifier.contains('.com')) {
+        // Employee login
+        final parts = identifier.split('@');
+        final username = parts[0];
+        final businessName = parts[1];
+
+        Business? business = await businessService.getBusinessByName(businessName);
+        if (business == null) throw Exception('Business not found.');
+
+        Employee? employee = business.employees.firstWhere(
+              (e) => e.name == username && UserModel.verifyPassword(password, e.password),
+          orElse: () => null,
+        );
+
+        if (employee == null) throw Exception('Invalid credentials.');
+
+        print("Employee logged in: ${employee.name}");
+      } else {
+        // Admin login
+        User? firebaseUser = await authService.signIn(identifier, password);
+        print("Admin logged in: ${firebaseUser?.email}");
+      }
+    } catch (e) {
+      print("Error during sign-in: $e");
+      errorMessage = e.toString();
+    }
+  }*/
+
 }

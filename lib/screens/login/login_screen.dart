@@ -5,8 +5,8 @@ import 'package:shadcn_ui/shadcn_ui.dart';
 import 'package:shop_mate/models/users/constants_enums.dart';
 import 'package:shop_mate/providers/authentication_provider.dart';
 import 'package:shop_mate/providers/theme_provider.dart';
-import 'package:shop_mate/screens/login/components/sign_in_screen.dart';
-import 'package:shop_mate/screens/login/components/sign_up_screen.dart';
+import 'package:shop_mate/screens/login/sign_in_screen.dart';
+import 'package:shop_mate/screens/login/sign_up_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -18,15 +18,12 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
     final themeProv = Provider.of<ThemeProvider>(context);
     final authProv = Provider.of<AuthenticationProvider>(context);
 
     return Scaffold(
       body: SingleChildScrollView(
-        padding: EdgeInsets.symmetric(
-          vertical: 150.h,
-        ),
+        padding: EdgeInsets.symmetric(vertical: 150.h, horizontal: 30.w),
         child: Center(
           child: ConstrainedBox(
             constraints: BoxConstraints(maxWidth: 450.w, minHeight: 300.h),

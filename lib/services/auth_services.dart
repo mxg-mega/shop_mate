@@ -3,23 +3,25 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:logger/logger.dart';
 import 'package:shop_mate/core/utils/constants.dart';
 import 'package:shop_mate/models/users/constants_enums.dart';
 import 'package:shop_mate/models/users/user_model.dart';
 import 'package:shop_mate/services/firebase_services.dart';
 import 'package:shop_mate/services/storage_services.dart';
 
-class AuthService {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+class MyAuthService {
+  // final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  final FirebaseService<UserModel> userService;
+  // final MyFirebaseService<UserModel> userService;
 
   /// Constructor
-  AuthService(this.userService);
+  // MyAuthService();
 
   /// Registers new users
-  Future<void> createUser({
+  UserModel createUserModel({
+    required String id,
     required String email,
     required String password,
     required String name,
@@ -27,10 +29,10 @@ class AuthService {
     required String phoneNumber,
     required String businessID,
     required String? profilePicture,
-  }) async {
+  }) {
     final hashedPassword = UserModel.hashPassword(password);
-    final newUser = UserModel(
-      id: _firestore.collection(Storage.users).doc().id,
+    final newUserModel = UserModel(
+      id: id,
       name: name,
       email: email,
       password: hashedPassword,
@@ -42,8 +44,25 @@ class AuthService {
       updatedAt: DateTime.now(),
       isActive: true,
     );
+    logger.e("created the UserMode: ${newUserModel.toString()}");
+    return newUserModel;
+  }
 
-    await userService.create(newUser);
+  Future<User?> registerUser(String email, String password) async {
+    // in a Try catch block
+    try {
+      // call authenticator to register user
+      // a user credential class is the return type of the registration method
+      print('Firebase Auth: Creating User ....');
+      UserCredential? newUser = await _auth.createUserWithEmailAndPassword(
+          email: email, password: password);
+      print('FireBase Auth: Successfully created a new user: ${newUser.user}');
+      // after getting the credential we get the user class and return it
+      return newUser.user;
+    } catch (e) {
+      print('Error Registering User: $e \n By User/Auth Service');
+      return null;
+    }
   }
 
   /// Sign in with email and password.
@@ -60,29 +79,29 @@ class AuthService {
     }
   }
 
-  /// Authenticates a user by email and password.
-  Future<UserModel?> authenticateUser({
-    required String email,
-    required String password,
-  }) async {
-    final querySnapshot = await _firestore
-        .collection('users')
-        .where('email', isEqualTo: email)
-        .get();
+  // /// Authenticates a user by email and password.
+  // Future<UserModel?> authenticateUser({
+  //   required String email,
+  //   required String password,
+  // }) async {
+  //   final querySnapshot = await _firestore
+  //       .collection('users')
+  //       .where('email', isEqualTo: email)
+  //       .get();
 
-    if (querySnapshot.docs.isEmpty) {
-      throw Exception('User not found');
-    }
+  //   if (querySnapshot.docs.isEmpty) {
+  //     throw Exception('User not found');
+  //   }
 
-    final userDoc = querySnapshot.docs.first;
-    final user = userService.fromJson(userDoc.data() as Map<String, dynamic>);
+  //   final userDoc = querySnapshot.docs.first;
+  //   final user = userService.fromJson(userDoc.data() as Map<String, dynamic>);
 
-    if (UserModel.verifyPassword(password, user.password)) {
-      return user;
-    } else {
-      throw Exception('Invalid credentials');
-    }
-  }
+  //   if (UserModel.verifyPassword(password, user.password)) {
+  //     return user;
+  //   } else {
+  //     throw Exception('Invalid credentials');
+  //   }
+  // }
 
   /// Sign out the user.
   Future<void> signOut() async {
@@ -121,7 +140,5 @@ class AuthService {
     return user?.emailVerified ?? false;
   }
 
-  // Map<String, dynamic> userLookupByEmail(String email){
-  //   final querySnap
-  // }
+
 }

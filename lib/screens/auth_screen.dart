@@ -11,16 +11,29 @@ class AuthScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final authProv = Provider.of<SessionProvider>(context);
+    final sessionProvider = Provider.of<SessionProvider>(context);
 
     return StreamBuilder<User?>(
-        stream: authProv.auth.authStateChanges(),
-        builder: (context, snapShot) {
-          if (snapShot.hasData) {
-            return HomeScreen();
-          } else {
-            return LoginScreen();
-          }
-        });
+      stream: sessionProvider.firebaseAuthStream,
+      builder: (context, authSnapshot) {
+        if (authSnapshot.hasData) {
+          // Firebase Authenticated User (Admin/Customer)
+          return const HomeScreen();
+        } else {
+          // Check for Custom Employee Session
+          return StreamBuilder<bool>(
+            stream: sessionProvider.customSessionStream,
+            builder: (context, customSessionSnapshot) {
+              if (customSessionSnapshot.hasData &&
+                  customSessionSnapshot.data == true) {
+                return const HomeScreen(); // Custom Employee Session Active
+              } else {
+                return const LoginScreen(); // Not Logged In
+              }
+            },
+          );
+        }
+      },
+    );
   }
 }

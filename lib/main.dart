@@ -1,9 +1,12 @@
+import 'dart:io';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 import 'package:shop_mate/providers/authentication_provider.dart';
-import 'package:shop_mate/providers/home_screen_provider.dart';
+import 'package:shop_mate/providers/sidebar_provider.dart';
 import 'package:shop_mate/providers/session_provider.dart';
 import 'package:shop_mate/providers/theme_provider.dart';
 import 'package:shop_mate/firebase_options.dart';
@@ -16,6 +19,21 @@ Future<void> main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
+  FirebaseFirestore.instance.settings = const Settings(
+    persistenceEnabled: true,
+    cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED,
+  );
+
+  if (Platform.isWindows) {
+    try {
+      print("Firestore cache Clear...");
+      await FirebaseFirestore.instance.clearPersistence();
+      print("Firestore cache Cleared");
+    } catch (e) {
+      print("Failed to clear firestore cache for windows");
+    }
+  }
+
   runApp(
     MultiProvider(
       providers: [
@@ -23,9 +41,9 @@ Future<void> main() async {
         ChangeNotifierProvider<AuthenticationProvider>(
             create: (_) => AuthenticationProvider()),
         ChangeNotifierProvider<SessionProvider>(
-            create: (_) => SessionProvider()),
-        ChangeNotifierProvider<HomeScreenProvider>(
-            create: (_) => HomeScreenProvider()),
+            create: (_) => SessionProvider()..listenToAuthChanges()),
+        ChangeNotifierProvider<SidebarProvider>(
+            create: (_) => SidebarProvider()),
       ],
       child: const MyApp(),
     ),
@@ -45,14 +63,10 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: ShadThemeData(
         brightness: Brightness.light,
-        colorScheme: const ShadSlateColorScheme.light(
-          background: Colors.white,
-        ),
+        colorScheme: const ShadSlateColorScheme.light(),
       ),
       darkTheme: ShadThemeData(
-        colorScheme: const ShadSlateColorScheme.dark(
-          background: Color.fromARGB(255, 12, 48, 77),
-        ),
+        colorScheme: const ShadSlateColorScheme.dark(),
         brightness: Brightness.dark,
       ),
       themeMode: themeProvider.themeMode,

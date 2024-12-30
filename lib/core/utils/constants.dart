@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:icons_plus/icons_plus.dart';
+import 'package:logger/logger.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 import 'package:shop_mate/core/utils/layouts/responsive_layout.dart';
 
 const mobileWidth = 650;
 const desktopWidth = 1100;
+final logger = Logger();
 
 // ignore: camel_case_types
 class kImages {
@@ -14,10 +17,33 @@ class kImages {
 }
 
 class Storage {
-  static const String users = 'users';
-  static const String businesses = 'businesses';
-  static const String inventory = 'inventory';
+  static const String users = 'Users';
+  static const String businesses = 'Businesses';
+  static const String inventory = 'Inventory';
+  static const String employees = 'Employees';
 }
+
+List<Map<String, dynamic>> modules = [
+  {
+    'name': 'dashboard',
+    'icon': Bootstrap.house,
+    'lucide': LucideIcons.house,
+    'label': 'Dashboard'
+  },
+  {
+    'name': 'inventory',
+    'icon': Bootstrap.box,
+    'lucide': LucideIcons.box,
+    'label': 'Inventory'
+  },
+  {
+    'name': 'credit_management',
+    'icon': Bootstrap.credit_card,
+    'another': Icons.credit_card_outlined,
+    'lucide': LucideIcons.creditCard,
+    'label': 'Credit'
+  }
+];
 
 class MyDrawer extends StatelessWidget {
   const MyDrawer({
@@ -29,8 +55,7 @@ class MyDrawer extends StatelessWidget {
     final theme = ShadTheme.of(context);
 
     return Drawer(
-      elevation: ResponsiveLayout.isTablet(context) ? 0.0 : 10,
-      clipBehavior: Clip.antiAlias,
+      shadowColor: Colors.grey,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [

@@ -1,19 +1,21 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shop_mate/models/base_model.dart';
 
-/// A generic service class for performing CRUD operations in Firestore.
-/// 
+import '../core/utils/constants.dart';
+
+/// A generic service class for performing CRUD operations in _Firestore.
+///
 /// [T] must extend `BaseModel` and provide methods for JSON serialization
 /// and deserialization.
-class FirebaseService<T extends BaseModel> {
-  /// The Firestore collection name for this service.
+class MyFirebaseService<T extends BaseModel> {
+  /// The _Firestore collection name for this service.
   final String collectionName;
 
-  /// A function to convert a Firestore document's data into an object of type [T].
+  /// A function to convert a _Firestore document's data into an object of type [T].
   final T Function(Map<String, dynamic>) fromJson;
 
-  /// Creates an instance of [FirebaseService].
-  FirebaseService({
+  /// Creates an instance of [MyFirebaseService].
+  MyFirebaseService({
     required this.collectionName,
     required this.fromJson,
   });
@@ -23,9 +25,14 @@ class FirebaseService<T extends BaseModel> {
   /// Creates a new document in Firestore.
   Future<void> create(T model) async {
     try {
-      await _firestore.collection(collectionName).doc(model.id).set(model.toJson());
-    } catch (e) {
-      print("Error creating document: $e");
+      print(
+          'My Firebase CRUD Service creating document:\n ${model.toJson()}\n.......');
+      await _firestore
+          .collection(collectionName)
+          .doc(model.id)
+          .set(model.toJson());
+    } on FirebaseException catch (e) {
+      print("Error creating document: ${e.toString()}");
       throw Exception("Create operation failed");
     }
   }
@@ -41,7 +48,19 @@ class FirebaseService<T extends BaseModel> {
     }
   }
 
-  /// Updates a document with the given ID in Firestore.
+  /// Reads a document by its name from Firestore.
+  Future<T?> readByName(String name) async {
+    try {
+      final doc = await _firestore.collection(collectionName).where('name', isEqualTo: name).get();
+      logger.d("Gotten ${doc.docs.first.data()} by name");
+      return doc.docs.isEmpty ? fromJson(doc.docs.first.data()) : null;
+    } catch (e) {
+      print("Error reading document: $e");
+      throw Exception("Read operation failed: Failed to get info by name");
+    }
+  }
+
+  /// Updates a document with the given ID in _Firestore.
   Future<void> update(String id, Map<String, dynamic> updates) async {
     try {
       await _firestore.collection(collectionName).doc(id).update(updates);
@@ -51,7 +70,7 @@ class FirebaseService<T extends BaseModel> {
     }
   }
 
-  /// Deletes a document with the given ID from Firestore.
+  /// Deletes a document with the given ID from _Firestore.
   Future<void> delete(String id) async {
     try {
       await _firestore.collection(collectionName).doc(id).delete();
@@ -64,10 +83,10 @@ class FirebaseService<T extends BaseModel> {
   /// Streams a list of documents in real-time.
   Stream<List<T>> list() {
     return _firestore.collection(collectionName).snapshots().map((snapshot) =>
-        snapshot.docs.map((doc) => fromJson(doc.data()!)).toList());
+        snapshot.docs.map((doc) => fromJson(doc.data())).toList());
   }
 
-  /// Retrieves a paginated list of documents from Firestore.
+  /// Retrieves a paginated list of documents from _Firestore.
   Future<List<T>> paginatedList({
     required int limit,
     DocumentSnapshot? startAfter,

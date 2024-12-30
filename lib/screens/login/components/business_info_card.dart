@@ -4,9 +4,10 @@ import 'package:shadcn_ui/shadcn_ui.dart';
 import 'package:shop_mate/models/users/constants_enums.dart';
 import 'package:shop_mate/providers/authentication_provider.dart';
 import 'package:shop_mate/screens/login/components/constants.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class BusinessInfoCard extends StatelessWidget {
-  BusinessInfoCard({
+  const BusinessInfoCard({
     super.key,
     required this.cardTitle,
   });
@@ -19,7 +20,9 @@ class BusinessInfoCard extends StatelessWidget {
     final authProv = Provider.of<AuthenticationProvider>(context);
 
     return ConstrainedBox(
-      constraints: BoxConstraints(maxWidth: 350),
+      constraints: BoxConstraints(
+        maxWidth: 150.w,
+      ),
       child: ShadCard(
         title: Text(
           cardTitle,
@@ -42,14 +45,17 @@ class BusinessInfoCard extends StatelessWidget {
             ),
             const Perimeter(height: 3),
             ShadInputFormField(
-              label: Text('Email'),
-              placeholder: Text('Email'),
+              label: const Text('Email'),
+              placeholder: const Text('Email'),
               keyboardType: TextInputType.emailAddress,
               validator: (value) {
                 if (value.length > 2 &&
                     !value.contains(
                         RegExp(r'^[\w-\.]+@[a-zA-Z]+\.[a-zA-Z]{2,4}$'))) {
                   return 'Enter a valid Email Address or leave Empty if the same as from user information';
+                } else if (value.length < 2 || value == null) {
+                  authProv.bizInfo.addAll({'email': null});
+                  return null;
                 } else {
                   authProv.bizInfo.addAll({'email': value});
                   return null;
@@ -58,14 +64,16 @@ class BusinessInfoCard extends StatelessWidget {
             ),
             const Perimeter(height: 3),
             ShadInputFormField(
-              label: Text('Phone Number'),
-              placeholder: Text('Phone Number'),
+              label: const Text('Phone Number'),
+              placeholder: const Text('Phone Number'),
               keyboardType: TextInputType.phone,
               controller: authProv.bizPhoneNumberController,
               validator: (value) {
                 if (value.length > 2 &&
                     !value.contains(RegExp(r'^(\+234|0)([789]\d{9})$'))) {
                   return 'Please Enter valid Phone Number or Leave empty if the same as user information';
+                } else if (value.length < 2 || value == null) {
+                  authProv.bizInfo.addAll({'phoneNumber': null});
                 } else {
                   authProv.bizInfo.addAll({'phoneNumber': value});
                 }
@@ -75,7 +83,7 @@ class BusinessInfoCard extends StatelessWidget {
             const Perimeter(height: 3),
             ShadInputFormField(
               label: importantLabel('Address', context),
-              placeholder: Text('Address'),
+              placeholder: const Text('Address'),
               keyboardType: TextInputType.streetAddress,
               controller: authProv.addressController,
               validator: (v) => validate(

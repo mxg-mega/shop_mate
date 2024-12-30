@@ -1,9 +1,9 @@
 /// A base class representing common properties shared across models.
 class BaseModel {
-  final String name;
+  String name;
   final String id;
-  late final DateTime? createdAt;
-  late DateTime? updatedAt;
+  DateTime? createdAt;
+  DateTime? updatedAt;
 
   /// Creates a [BaseModel] with the given parameters.
   BaseModel({

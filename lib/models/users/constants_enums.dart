@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-enum SubscriptionTypes{
+enum SubscriptionTiers{
   free,
   basic,
   standard,

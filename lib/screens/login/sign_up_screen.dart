@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:shop_mate/core/error/error_toaster.dart';
 import 'package:shop_mate/models/users/constants_enums.dart';
 import 'package:shop_mate/providers/authentication_provider.dart';
+import 'package:shop_mate/providers/session_provider.dart';
 import 'package:shop_mate/screens/login/components/business_info_card.dart';
 import 'package:shop_mate/screens/login/components/user_info_card.dart';
 
@@ -21,29 +22,52 @@ class SignUpScreen extends StatelessWidget {
       child: ShadForm(
         key: formKey,
         child: ConstrainedBox(
-          constraints: BoxConstraints(maxWidth: 450.w),
+          constraints: BoxConstraints(maxWidth: 250.w),
           child: Column(
             children: [
-              UserInfoCard(
+              const UserInfoCard(
                 cardTitle: 'User Information',
               ),
               const Perimeter(height: 3),
-              BusinessInfoCard(
+              const BusinessInfoCard(
                 cardTitle: 'Business Information',
               ),
               const Perimeter(height: 3),
               ConstrainedBox(
-                constraints: BoxConstraints(
-                  minWidth: 320.w,
+                constraints: const BoxConstraints(
+                  minWidth: 320,
                 ),
                 child: ShadButton(
                   child: const Text('Sign Up'),
-                  onPressed: () {
+                  onPressed: () async {
                     if (formKey.currentState!.saveAndValidate()) {
                       print('Validation Success');
                       print('User: ${authProv.userInfo}');
                       print('Business : ${authProv.bizInfo}');
-                      authProv.signUp(authProv.userInfo, authProv.bizInfo);
+                      try {
+                        print('Signing up .......');
+                        await authProv.signUp(
+                          context,
+                          authProv.emailController.text,
+                          authProv.pwController.text,
+                          authProv.nameController.text,
+                          authProv.phoneNumberController.text,
+                          authProv.selectedRole,
+                          businessAddress: authProv.addressController.text,
+                          businessName: authProv.bizNameController.text,
+                          businessPhone: authProv.bizPhoneNumberController.text,
+                          businessEmail: authProv.bizEmailController.text,
+                          businessCategory: authProv.selectedBusinessCategory,
+                        );
+                      } catch (e) {
+                        print('Error Signing Up.......!');
+                        if (context.mounted){
+                          ErrorToaster(
+                              context: context,
+                              message: 'Error Creating User',
+                              isDestructive: true);
+                        }
+                      }
                     } else {
                       print("Validation Failed");
                       ErrorToaster(

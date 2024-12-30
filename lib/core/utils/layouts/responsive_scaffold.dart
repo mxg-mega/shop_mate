@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 import 'package:shop_mate/core/utils/layouts/responsive_layout.dart';
-import 'package:shop_mate/providers/home_screen_provider.dart';
+import 'package:shop_mate/providers/sidebar_provider.dart';
 
 class ResponsiveScaffold extends StatelessWidget {
   const ResponsiveScaffold({
@@ -43,7 +43,7 @@ class ResponsiveScaffold extends StatelessWidget {
             child: IconButton(
               icon: const Icon(Icons.menu),
               onPressed: () {
-                Provider.of<HomeScreenProvider>(context, listen: false)
+                Provider.of<SidebarProvider>(context, listen: false)
                     .toggleSideBar();
               },
             ),
@@ -53,7 +53,7 @@ class ResponsiveScaffold extends StatelessWidget {
           children: [
             navigationRail,
             Expanded(
-              flex: 5,
+              flex: 2,
               child: body,
             ),
           ],
@@ -70,7 +70,7 @@ class ResponsiveScaffold extends StatelessWidget {
             child: IconButton(
               icon: const Icon(Icons.menu),
               onPressed: () {
-                Provider.of<HomeScreenProvider>(context, listen: false)
+                Provider.of<SidebarProvider>(context, listen: false)
                     .toggleSideBar();
               },
             ),
@@ -80,7 +80,7 @@ class ResponsiveScaffold extends StatelessWidget {
           children: [
             navigationRail,
             Expanded(
-              flex: 7,
+              flex: 2,
               child: body,
             ),
           ],

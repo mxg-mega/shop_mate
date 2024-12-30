@@ -4,9 +4,10 @@ import 'package:shadcn_ui/shadcn_ui.dart';
 import 'package:shop_mate/models/users/constants_enums.dart';
 import 'package:shop_mate/providers/authentication_provider.dart';
 import 'package:shop_mate/screens/login/components/constants.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class UserInfoCard extends StatelessWidget {
-  UserInfoCard({
+  const UserInfoCard({
     super.key,
     required this.cardTitle,
   });
@@ -20,7 +21,7 @@ class UserInfoCard extends StatelessWidget {
     bool obsecure = true;
 
     return ConstrainedBox(
-      constraints: BoxConstraints(maxWidth: 350),
+      constraints: BoxConstraints(maxWidth: 150.w),
       child: ShadCard(
         title: Text(
           cardTitle,
@@ -31,7 +32,7 @@ class UserInfoCard extends StatelessWidget {
             const Perimeter(height: 3),
             ShadInputFormField(
               label: importantLabel('Full name', context),
-              placeholder: Text('Full Name'),
+              placeholder: const Text('Full Name'),
               keyboardType: TextInputType.name,
               controller: authProvider.nameController,
               validator: (value) => validate(
@@ -45,7 +46,7 @@ class UserInfoCard extends StatelessWidget {
             const Perimeter(height: 3),
             ShadInputFormField(
               label: importantLabel('Email', context),
-              placeholder: Text('Email'),
+              placeholder: const Text('Email'),
               keyboardType: TextInputType.emailAddress,
               validator: (value) {
                 if (value.length < 2 ||
@@ -63,7 +64,7 @@ class UserInfoCard extends StatelessWidget {
             ShadInputFormField(
               label: importantLabel('Phone Number', context),
               controller: authProvider.phoneNumberController,
-              placeholder: Text('Phone Number'),
+              placeholder: const Text('Phone Number'),
               keyboardType: TextInputType.phone,
               validator: (v) {
                 if (v.isEmpty ||
@@ -77,7 +78,7 @@ class UserInfoCard extends StatelessWidget {
             const Perimeter(height: 3),
             ShadInputFormField(
               label: importantLabel('Password', context),
-              placeholder: Text('Password'),
+              placeholder: const Text('Password'),
               keyboardType: TextInputType.visiblePassword,
               obscureText: obsecure,
               validator: (value) {
@@ -91,7 +92,7 @@ class UserInfoCard extends StatelessWidget {
             const Perimeter(height: 3),
             ShadInputFormField(
               label: importantLabel('Confirm Password', context),
-              placeholder: Text('Confirm Password'),
+              placeholder: const Text('Confirm Password'),
               obscureText: true,
               keyboardType: TextInputType.visiblePassword,
               validator: (p) {

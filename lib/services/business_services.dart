@@ -1,35 +1,28 @@
-import 'dart:io';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:file_picker/file_picker.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shop_mate/core/utils/constants.dart';
 import 'package:shop_mate/models/businesses/business_model.dart';
 import 'package:shop_mate/models/token_generator.dart';
 import 'package:shop_mate/models/users/constants_enums.dart';
-import 'package:shop_mate/models/users/user_model.dart';
+
 import 'package:shop_mate/services/firebase_services.dart';
-import 'package:shop_mate/services/storage_services.dart';
 
 class BusinessServices {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final FirebaseService<Business> businessService;
-  var _newBusiness;
-
-  Business get newBusiness => _newBusiness;
-
-  BusinessServices(this.businessService);
+  final MyFirebaseService<Business> businessService = MyFirebaseService(
+      collectionName: Storage.businesses,
+      fromJson: (data) => Business.fromJson(data));
 
   static int id = 0;
 
-  Future<void> createBusiness({
+  Business createBusiness({
     required String name,
     required String email,
     required String phone,
     required String address,
     required BusinessCategories businessType,
-  }) async {
-    _newBusiness = Business(
+    required ownerID,
+  }) {
+    final newBusiness = Business(
       id: _firestore.collection(Storage.businesses).doc().id,
       name: name,
       email: email,
@@ -37,12 +30,37 @@ class BusinessServices {
       address: address,
       businessType: businessType,
       token: generateToken(),
+      ownerId: ownerID,
     );
+    logger.d("Created BusinessModel: ${newBusiness.toString()}");
+    return newBusiness;
 
+    // try {
+    //   print('FirebaseService creating and storing business....');
+    //   print('NewBusiness: ${_newBusiness!.toJson()}');
+    //   // await businessService.create(_newBusiness!);
+    //   print('Sucessfully Created a Business: ${_newBusiness!.toJson()}');
+    // } catch (e) {
+    //   print('failed to create a Business : $e, \n By BusinessServices');
+    // }
+  }
+
+  Future<Business?> getBusinessByName(String name) async {
     try {
-      await businessService.create(_newBusiness);
+      return await businessService.readByName(name);
     } catch (e) {
-      print('failed to create a user : $e, \n By UserServices');
+      throw Exception("Failed to get by name");
+    }
+  }
+
+  void saveToFirebase(Business bizModel) async {
+    logger.d("Saving business to firestore......");
+    try {
+      await businessService.create(bizModel);
+      logger.d("Successfully saved business to firebase!!");
+    } catch (e) {
+      logger.e("Failed to save business model to firebase");
+      throw Exception("Failed to save to firebase");
     }
   }
 }

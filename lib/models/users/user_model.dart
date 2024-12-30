@@ -3,12 +3,12 @@ import 'package:shop_mate/models/users/constants_enums.dart';
 import 'package:bcrypt/bcrypt.dart';
 
 class UserModel extends BaseModel {
-  final String email;
-  final String password;
-  final String? phoneNumber;
-  final String? profilePicture;
-  final RoleTypes role;
-  late final String? businessID;
+  String email;
+  String password;
+  String? phoneNumber;
+  String? profilePicture;
+  RoleTypes role;
+  String? businessID;
   final bool isActive;
 
   UserModel({
@@ -59,7 +59,7 @@ class UserModel extends BaseModel {
       password: json['password'] as String,
       role: RoleTypes.values.firstWhere(
         (r) => r.name == json['role'] as String,
-        orElse: () => RoleTypes.customer,
+        orElse: () => RoleTypes.admin,
       ),
       phoneNumber: json['phoneNumber'] as String?,
       isActive: json['isActive'] as bool? ?? false,
@@ -102,7 +102,7 @@ class UserModel extends BaseModel {
       password: parts[3],
       role: RoleTypes.values.firstWhere(
         (r) => r.name == parts[4],
-        orElse: () => RoleTypes.customer,
+        orElse: () => RoleTypes.admin,
       ),
       phoneNumber: parts[5],
       isActive: parts[6] == 'true',
