@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shop_mate/core/utils/constants.dart';
 import 'package:shop_mate/models/businesses/business_model.dart';
 import 'package:shop_mate/models/token_generator.dart';
-import 'package:shop_mate/models/users/constants_enums.dart';
+import 'package:shop_mate/core/utils/constants_enums.dart';
 
 import 'package:shop_mate/services/firebase_services.dart';
 
@@ -20,7 +20,7 @@ class BusinessServices {
     required String phone,
     required String address,
     required BusinessCategories businessType,
-    required ownerID,
+    required String ownerID,
   }) {
     final newBusiness = Business(
       id: _firestore.collection(Storage.businesses).doc().id,
@@ -34,15 +34,6 @@ class BusinessServices {
     );
     logger.d("Created BusinessModel: ${newBusiness.toString()}");
     return newBusiness;
-
-    // try {
-    //   print('FirebaseService creating and storing business....');
-    //   print('NewBusiness: ${_newBusiness!.toJson()}');
-    //   // await businessService.create(_newBusiness!);
-    //   print('Sucessfully Created a Business: ${_newBusiness!.toJson()}');
-    // } catch (e) {
-    //   print('failed to create a Business : $e, \n By BusinessServices');
-    // }
   }
 
   Future<Business?> getBusinessByName(String name) async {
@@ -50,6 +41,21 @@ class BusinessServices {
       return await businessService.readByName(name);
     } catch (e) {
       throw Exception("Failed to get by name");
+    }
+  }
+
+  Future<Business?> getBusinessById(String? id) async {
+    logger.d("Fetching Business....");
+    if (id == null) {
+      throw Exception(
+          "Business ID cannot be null.\n - business Getter By Business Services.");
+    }
+    try {
+      final bizInfo = await businessService.read(id);
+      return bizInfo;
+    } catch (e) {
+      logger.e("Failed to fetch biz");
+      throw Exception("Could not get Biz");
     }
   }
 

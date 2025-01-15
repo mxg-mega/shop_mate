@@ -17,6 +17,16 @@ enum Features{
   settings,
 }
 
+/// Roles specifically when signing up
+enum RegistrationUserRole {
+  admin,
+  customer,
+}
+
+/// Roles for when the user is an admin
+/// for cases such as creating an employee account
+/// or even updating/upgrading an employee account
+/// TODO: update the use cases of User role during registeration
 enum UserRole {
   none,
   admin,
@@ -29,6 +39,7 @@ enum UserRole {
 
 enum BusinessCategories {
   none,
+  retail,
   pharmacy,
   provision,
   electronics,

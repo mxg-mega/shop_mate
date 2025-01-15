@@ -5,9 +5,54 @@ class BusinessSettings {
   final String currency;
   final String timezone;
   final UnitSystem defaultUnitSystem;
-  final List<String> additionalUnitSystems;
-  // final Map<String, PermissionLevel> defaultPermissions;
+  final List<UnitSystem> additionalUnitSystems;
+  final UnitSystem unitSystem;
 
-  BusinessSettings(this.currency, this.timezone, this.defaultUnitSystem, this.additionalUnitSystems, this.businessId);
+  BusinessSettings({
+    required this.businessId,
+    required this.currency,
+    required this.timezone,
+    UnitSystem? defaultUnitSystem,
+    List<UnitSystem>? additionalUnitSystems,
+    UnitSystem? unitSystem,
+  })  : defaultUnitSystem = defaultUnitSystem ?? UnitSystem.defaultSystem(),
+        additionalUnitSystems = additionalUnitSystems ?? [],
+        unitSystem = unitSystem ?? UnitSystem.defaultSystem();
 
+  factory BusinessSettings.defaultSettings(String businessId) {
+    return BusinessSettings(
+      businessId: businessId,
+      currency: 'USD',
+      timezone: 'UTC',
+      defaultUnitSystem: UnitSystem.defaultSystem(),
+      additionalUnitSystems: [],
+      unitSystem: UnitSystem.defaultSystem(),
+    );
+  }
+
+  factory BusinessSettings.fromJson(Map<String, dynamic> json) {
+    return BusinessSettings(
+      businessId: json['businessId'] as String,
+      currency: json['currency'] as String,
+      timezone: json['timezone'] as String,
+      defaultUnitSystem: UnitSystem.fromJson(
+          json['defaultUnitSystem'] as Map<String, dynamic>),
+      additionalUnitSystems: (json['additionalUnitSystems'] as List<dynamic>)
+          .map((system) => UnitSystem.fromJson(system as Map<String, dynamic>))
+          .toList(),
+      unitSystem: UnitSystem.fromJson(json['unitSystem']),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'businessId': businessId,
+      'currency': currency,
+      'timezone': timezone,
+      'defaultUnitSystem': defaultUnitSystem.toJson(),
+      'additionalUnitSystems':
+          additionalUnitSystems.map((system) => system.toJson()).toList(),
+      'unitSystem': unitSystem.toJson(),
+    };
+  }
 }

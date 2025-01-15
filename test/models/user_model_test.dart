@@ -1,6 +1,6 @@
 import 'package:test/test.dart';
 import 'package:shop_mate/models/users/user_model.dart';
-import 'package:shop_mate/models/users/constants_enums.dart';
+import 'package:shop_mate/core/utils/constants_enums.dart';
 
 void main() {
   group('User Model', () {
@@ -10,7 +10,7 @@ void main() {
         name: 'John Doe',
         email: 'john.doe@example.com',
         password: 'password123',
-        role: RoleTypes.admin,
+        role: UserRole.admin,
         phoneNumber: '1234567890',
         businessID: null,
         profilePicture: null,
@@ -23,7 +23,7 @@ void main() {
       expect(user.name, 'John Doe');
       expect(user.email, 'john.doe@example.com');
       expect(user.password, 'password123');
-      expect(user.role, RoleTypes.admin);
+      expect(user.role, UserRole.admin);
       expect(user.phoneNumber, '1234567890');
       expect(user.businessID, null);
       expect(user.profilePicture, null);
@@ -37,7 +37,7 @@ void main() {
           name: 'John Doe',
           email: 'john.doe@example.com',
           password: '',
-          role: RoleTypes.admin,
+          role: UserRole.admin,
           phoneNumber: '1234567890',
           businessID: null,
           profilePicture: null,
@@ -52,7 +52,7 @@ void main() {
           name: 'John Doe',
           email: 'john.doe@example.com',
           password: 'password123',
-          role: RoleTypes.admin,
+          role: UserRole.admin,
           phoneNumber: '',
           businessID: null,
           profilePicture: null,
@@ -67,7 +67,7 @@ void main() {
           name: 'John Doe',
           email: 'john.doe@example.com',
           password: 'password123',
-          role: RoleTypes.customer,
+          role: UserRole.customer,
           phoneNumber: '1234567890',
           businessID: 'business123',
           profilePicture: null,
@@ -81,7 +81,7 @@ void main() {
         name: 'John Doe',
         email: 'john.doe@example.com',
         password: 'password123',
-        role: RoleTypes.admin,
+        role: UserRole.admin,
         phoneNumber: '1234567890',
         businessID: null,
         profilePicture: null,
@@ -122,7 +122,7 @@ void main() {
       expect(user.name, 'John Doe');
       expect(user.email, 'john.doe@example.com');
       expect(user.password, 'password123');
-      expect(user.role, RoleTypes.admin);
+      expect(user.role, UserRole.admin);
       expect(user.phoneNumber, '1234567890');
       expect(user.businessID, null);
       expect(user.isActive, true);
@@ -134,7 +134,7 @@ void main() {
         name: 'John Doe',
         email: 'john.doe@example.com',
         password: 'password123',
-        role: RoleTypes.admin,
+        role: UserRole.admin,
         phoneNumber: '1234567890',
         businessID: null,
         profilePicture: null,
@@ -155,7 +155,7 @@ void main() {
       expect(user.name, 'John Doe');
       expect(user.email, 'john.doe@example.com');
       expect(user.password, 'password123');
-      expect(user.role, RoleTypes.admin);
+      expect(user.role, UserRole.admin);
       expect(user.phoneNumber, '1234567890');
       expect(user.businessID, null);
       expect(user.isActive, true);

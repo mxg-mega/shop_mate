@@ -5,7 +5,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:logger/logger.dart';
 import 'package:shop_mate/core/utils/constants.dart';
-import 'package:shop_mate/models/users/constants_enums.dart';
+import 'package:shop_mate/core/utils/constants_enums.dart';
 import 'package:shop_mate/models/users/user_model.dart';
 import 'package:shop_mate/services/firebase_services.dart';
 import 'package:shop_mate/services/storage_services.dart';
@@ -25,7 +25,7 @@ class MyAuthService {
     required String email,
     required String password,
     required String name,
-    required RoleTypes role,
+    required UserRole role,
     required String phoneNumber,
     required String businessID,
     required String? profilePicture,

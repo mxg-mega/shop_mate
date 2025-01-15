@@ -1,17 +1,20 @@
 import 'package:shop_mate/models/base_model.dart';
+import 'package:shop_mate/models/businesses/business_settings.dart';
 import 'package:shop_mate/models/businesses/subscription_model.dart';
-import 'package:shop_mate/models/users/constants_enums.dart';
+import 'package:shop_mate/core/utils/constants_enums.dart';
 import 'package:shop_mate/models/users/employee_model.dart';
 
 class Business extends BaseModel {
   final String? email;
   final String address;
   final String phone;
-  final String? ownerId;
+  final String ownerId;
   final BusinessCategories businessType;
   final String? token;
   List<Employee> employees;
   Subscription subscription;
+  String? bizIdentifier;
+  BusinessSettings? businessSettings;
 
   Business({
     required super.id,
@@ -20,11 +23,15 @@ class Business extends BaseModel {
     required this.phone,
     required this.address,
     required this.businessType,
-    this.ownerId,
+    required this.ownerId,
     this.token,
     this.employees = const [],
     Subscription? subscription,
-  }) : subscription = subscription ?? Subscription.defaultSubscription();
+    this.bizIdentifier,
+    BusinessSettings?  businessSettings,
+
+  })  : subscription = subscription ?? Subscription.defaultSubscription(),
+        businessSettings = businessSettings ?? BusinessSettings.defaultSettings(ownerId);
 
   factory Business.fromJson(Map<String, dynamic> json) {
     return Business(
@@ -39,11 +46,15 @@ class Business extends BaseModel {
           orElse: () => BusinessCategories.other),
       token: json['token'] as String?,
       employees: (json['employees'] as List<dynamic>)
-          .map((employeejson) => Employee.fromJson(employeejson))
+          .map((data) => Employee.fromJson(data))
           .toList(),
       subscription: json['subscription'] != null
           ? Subscription.fromJson(json['subscription'] as Map<String, dynamic>)
           : Subscription.defaultSubscription(),
+      bizIdentifier: json['bizIdentifier'] as String,
+      businessSettings: json['businessSettings'] != null
+          ? BusinessSettings.fromJson(json['businessSettings'] as Map<String, dynamic>)
+          : BusinessSettings.defaultSettings(json['ownerId'] as String),
     );
   }
 
@@ -58,6 +69,9 @@ class Business extends BaseModel {
         'token': token,
         'employees': employees.map((employee) => employee.toJson()).toList(),
         'subscription': subscription.toJson(),
+        'ownerId': ownerId,
+        'bizIdentifier': bizIdentifier,
+        'businessSettings': businessSettings?.toJson(),
       });
   }
 

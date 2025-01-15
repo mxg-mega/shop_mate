@@ -37,6 +37,8 @@ class MyFirebaseService<T extends BaseModel> {
     }
   }
 
+  // TODO: Write a save function
+
   /// Reads a document by its ID from Firestore.
   Future<T?> read(String id) async {
     try {

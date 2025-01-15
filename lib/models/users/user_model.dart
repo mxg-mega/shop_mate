@@ -1,5 +1,5 @@
 import 'package:shop_mate/models/base_model.dart';
-import 'package:shop_mate/models/users/constants_enums.dart';
+import 'package:shop_mate/core/utils/constants_enums.dart';
 import 'package:bcrypt/bcrypt.dart';
 
 class UserModel extends BaseModel {
@@ -7,7 +7,7 @@ class UserModel extends BaseModel {
   String password;
   String? phoneNumber;
   String? profilePicture;
-  RoleTypes role;
+  UserRole role;
   String? businessID;
   final bool isActive;
 
@@ -23,7 +23,7 @@ class UserModel extends BaseModel {
     super.createdAt,
     super.updatedAt,
     this.isActive = true,
-  }) : assert(role != RoleTypes.customer || businessID == null,
+  }) : assert(role != UserRole.customer || businessID == null,
             'Customers cannot have a businessID') {
     _validateFields();
   }
@@ -46,7 +46,7 @@ class UserModel extends BaseModel {
     if (phoneNumber != null && phoneNumber!.isEmpty) {
       throw ArgumentError('Phone number cannot be empty if provided.');
     }
-    if (role == RoleTypes.customer && businessID != null) {
+    if (role == UserRole.customer && businessID != null) {
       throw ArgumentError('Customers cannot have a businessID.');
     }
   }
@@ -57,9 +57,9 @@ class UserModel extends BaseModel {
       name: json['name'] as String,
       email: json['email'] as String,
       password: json['password'] as String,
-      role: RoleTypes.values.firstWhere(
+      role: UserRole.values.firstWhere(
         (r) => r.name == json['role'] as String,
-        orElse: () => RoleTypes.admin,
+        orElse: () => UserRole.admin,
       ),
       phoneNumber: json['phoneNumber'] as String?,
       isActive: json['isActive'] as bool? ?? false,
@@ -100,9 +100,9 @@ class UserModel extends BaseModel {
       name: parts[1],
       email: parts[2],
       password: parts[3],
-      role: RoleTypes.values.firstWhere(
+      role: UserRole.values.firstWhere(
         (r) => r.name == parts[4],
-        orElse: () => RoleTypes.admin,
+        orElse: () => UserRole.admin,
       ),
       phoneNumber: parts[5],
       isActive: parts[6] == 'true',

@@ -1,39 +1,36 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
-import 'package:shop_mate/providers/sidebar_provider.dart';
+import 'package:shadcn_ui/shadcn_ui.dart';
+import 'package:shop_mate/providers/navigation_provider.dart';
 
-class SideBarItem extends StatefulWidget {
+class SideBarItem extends StatelessWidget {
   const SideBarItem({
     super.key,
     required this.icon,
     required this.tileText,
-    this.tileTag, required this.index,
+    required this.tileTag, required this.index,
   });
   final Widget icon;
   final Widget tileText;
-  final String? tileTag;
+  final String tileTag;
   final int index;
 
   @override
-  State<SideBarItem> createState() => _SideBarItemState();
-}
-
-class _SideBarItemState extends State<SideBarItem> {
-  @override
   Widget build(BuildContext context) {
-    final sidebarProv = Provider.of<SidebarProvider>(context);
+    final sidebarProv = Provider.of<NavigationProvider>(context, listen: false);
     bool isSelected = false;
 
     return Padding(
-      padding: EdgeInsets.symmetric(vertical: 1.0.w, horizontal: 12.0.w),
+      padding: EdgeInsets.symmetric(vertical:  1.0.w, horizontal: sidebarProv.isSidebarExpanded ? 12.0.w : 2),
       child: ListTile(
-        leading: widget.icon,
-        title: sidebarProv.sidebarOpen ? widget.tileText : null,
-        selected: isSelected,
+        leading: icon,
+        title: sidebarProv.isSidebarExpanded ? tileText : SizedBox(),
+        selected: sidebarProv.selectedIndex == index,
+        selectedTileColor: ShadTheme.of(context).colorScheme.selection,
         onTap: () {
-          sidebarProv.setSelectedIndex(widget.index);
-          sidebarProv.activeModule = widget.tileTag!;
+          sidebarProv.setSelectedIndex(index);
+          print("$index was selected");
         },
       ),
     );

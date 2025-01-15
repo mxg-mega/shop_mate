@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
-import 'package:shop_mate/models/users/constants_enums.dart';
+import 'package:shop_mate/core/utils/constants_enums.dart';
 import 'package:shop_mate/providers/authentication_provider.dart';
 import 'package:shop_mate/screens/login/components/constants.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -103,23 +103,23 @@ class UserInfoCard extends StatelessWidget {
               },
             ),
             const Perimeter(height: 3),
-            ShadSelectFormField<RoleTypes>(
+            ShadSelectFormField<UserRole>(
               onChanged: (r) => authProvider.setRole(r!),
               label: importantLabel('User Role', context),
               id: 'user_role',
-              itemCount: RoleTypes.values.length,
-              initialValue: RoleTypes.none,
-              options: RoleTypes.values
+              itemCount: UserRole.values.length,
+              initialValue: UserRole.none,
+              options: UserRole.values
                   .map(
                       (role) => ShadOption(value: role, child: Text(role.name)))
                   .toList(),
-              selectedOptionBuilder: (context, value) => value == RoleTypes.none
+              selectedOptionBuilder: (context, value) => value == UserRole.none
                   ? const Text('Select Your Role')
                   : Text(value.name),
               validator: (value) => validate(
-                value as RoleTypes,
+                value as UserRole,
                 'Please Choose Your Role',
-                RoleTypes.none,
+                UserRole.none,
                 authProvider.userInfo,
                 {'role': value},
               ),

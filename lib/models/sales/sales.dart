@@ -12,6 +12,7 @@ class Sale {
   final String customerName;
   final List<SaleItem> items;
   final double subtotal;
+  // TODO: add a total of sales price, cost price of the items, and the total profit from this sale
   final double taxRate;
   final double taxAmount;
   final double discount;
@@ -92,6 +93,7 @@ class SaleItem {
   final String? unit;
   final int quantity;
   final double unitPrice;
+  // TODO: update to have sales price and cost price
   final double total;
   final Map<String, dynamic>? customFields;
 

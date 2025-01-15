@@ -2,7 +2,7 @@ import "package:flutter/material.dart";
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
-import 'package:shop_mate/models/users/constants_enums.dart';
+import 'package:shop_mate/core/utils/constants_enums.dart';
 import 'package:shop_mate/providers/authentication_provider.dart';
 import 'package:shop_mate/providers/theme_provider.dart';
 import 'package:shop_mate/screens/login/sign_in_screen.dart';

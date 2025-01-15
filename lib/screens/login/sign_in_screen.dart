@@ -73,7 +73,7 @@ class SignInScreen extends StatelessWidget {
                 minWidth: 320,
               ),
               child: ShadButton(
-                child: Text('Sign In'),
+                child: const Text('Sign In'),
                 onPressed: () async {
                   if (formKey.currentState!.saveAndValidate()) {
                     print('Validation Success');

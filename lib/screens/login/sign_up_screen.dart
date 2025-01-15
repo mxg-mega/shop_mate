@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:shop_mate/core/error/error_toaster.dart';
-import 'package:shop_mate/models/users/constants_enums.dart';
+import 'package:shop_mate/core/utils/constants_enums.dart';
 import 'package:shop_mate/providers/authentication_provider.dart';
 import 'package:shop_mate/providers/session_provider.dart';
 import 'package:shop_mate/screens/login/components/business_info_card.dart';
@@ -61,13 +61,11 @@ class SignUpScreen extends StatelessWidget {
                         );
                       } catch (e) {
                         print('Error Signing Up.......!');
-                        if (context.mounted){
                           ErrorToaster(
                               context: context,
                               message: 'Error Creating User',
                               isDestructive: true);
                         }
-                      }
                     } else {
                       print("Validation Failed");
                       ErrorToaster(

@@ -7,7 +7,7 @@ import 'package:shadcn_ui/shadcn_ui.dart';
 import 'package:shop_mate/core/error/error_toaster.dart';
 import 'package:shop_mate/core/utils/constants.dart';
 import 'package:shop_mate/models/businesses/business_model.dart';
-import 'package:shop_mate/models/users/constants_enums.dart';
+import 'package:shop_mate/core/utils/constants_enums.dart';
 import 'package:shop_mate/models/users/user_model.dart';
 import 'package:shop_mate/providers/session_provider.dart';
 import 'package:shop_mate/services/auth_services.dart';
@@ -32,7 +32,7 @@ class AuthenticationProvider with ChangeNotifier {
   final bizEmailController = TextEditingController();
   final bizPhoneNumberController = TextEditingController();
 
-  RoleTypes selectedRole = RoleTypes.customer;
+  UserRole selectedRole = UserRole.customer;
 
   Map<String, dynamic> bizInfo = {};
   Map<String, dynamic> userInfo = {};
@@ -47,7 +47,7 @@ class AuthenticationProvider with ChangeNotifier {
 
   bool get isLoading => _isLoading;
 
-  void setRole(RoleTypes role) {
+  void setRole(UserRole role) {
     selectedRole = role;
   }
 
@@ -122,7 +122,8 @@ class AuthenticationProvider with ChangeNotifier {
     }
   }*/
 
-  Future<void> signInEmployee(String identifier, String password, BuildContext context) async {
+  Future<void> signInEmployee(
+      String identifier, String password, BuildContext context) async {
     final parts = identifier.split('@');
     final username = parts[0];
     final businessName = parts[1];
@@ -136,7 +137,8 @@ class AuthenticationProvider with ChangeNotifier {
 
     // final businessId = businessQuery.docs.first.id;
     final businessId = await bizService.getBusinessByName(businessName);
-    if (businessId == null) throw Exception("Cannot find business with identifier $businessName");
+    if (businessId == null)
+      throw Exception("Cannot find business with identifier $businessName");
 
     // Fetch employee
     QuerySnapshot employeeQuery = await FirebaseFirestore.instance
@@ -146,7 +148,8 @@ class AuthenticationProvider with ChangeNotifier {
         .get();
     if (employeeQuery.docs.isEmpty) throw Exception('Employee not found.');
 
-    final employeeData = employeeQuery.docs.first.data() as Map<String, dynamic>;
+    final employeeData =
+        employeeQuery.docs.first.data() as Map<String, dynamic>;
     final employeeModel = Employee.fromJson(employeeData);
 
     // Verify password
@@ -156,7 +159,7 @@ class AuthenticationProvider with ChangeNotifier {
 
     // Set session
     Provider.of<SessionProvider>(context, listen: false).setSession(
-      role: RoleTypes.staff,
+      role: UserRole.staff,
       userId: employeeQuery.docs.first.id,
       businessId: businessId.id,
       userData: employeeData,
@@ -166,7 +169,8 @@ class AuthenticationProvider with ChangeNotifier {
     print("Employee signed in: ${employeeData['name']}");
   }
 
-  Future<void> signInAdminCustomer(String email, String password, BuildContext context, dynamic sessionProvider) async {
+  Future<void> signInAdminCustomer(String email, String password,
+      BuildContext context, dynamic sessionProvider) async {
     try {
       User? firebaseUser = await authService.signIn(email, password);
       if (firebaseUser == null) throw Exception('Invalid credentials.');
@@ -179,7 +183,8 @@ class AuthenticationProvider with ChangeNotifier {
       Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;*/
 
       final userModel = await userServices.getUserData(firebaseUser.uid);
-      if (userModel == null) throw Exception("Unable to get user with id: ${firebaseUser.uid}");
+      if (userModel == null)
+        throw Exception("Unable to get user with id: ${firebaseUser.uid}");
 
       // Set session
       sessionProvider.setSession(
@@ -195,7 +200,6 @@ class AuthenticationProvider with ChangeNotifier {
       print("Sign-in error: $e");
     }
   }
-
 
   Future<void> saveUserToFirestore(UserModel user) async {
     try {
@@ -219,7 +223,7 @@ class AuthenticationProvider with ChangeNotifier {
     String password,
     String name,
     String phoneNumber,
-    RoleTypes role, {
+    UserRole role, {
     String? businessName,
     String? businessAddress,
     String? businessPhone,
@@ -251,7 +255,7 @@ class AuthenticationProvider with ChangeNotifier {
         await saveUserToFirestore(newUserModel);
 
         // Step 3: Handle Business Creation (if admin role)
-        if (role == RoleTypes.admin) {
+        if (role == UserRole.admin) {
           Business newBusiness = bizService.createBusiness(
             name: businessName!,
             email: businessEmail ?? email,
@@ -264,8 +268,13 @@ class AuthenticationProvider with ChangeNotifier {
           newUserModel.businessID = newBusiness.id;
           await userServices.updateUserInfo(
               newFireBaseUser.uid, newUserModel.toJson());
+          SessionProvider().setSession(
+              role: newUserModel.role,
+              userId: newUserModel.id,
+              userModel: newUserModel,
+          );
 
-          if (role == RoleTypes.admin) bizService.saveToFirebase(newBusiness);
+          if (role == UserRole.admin) bizService.saveToFirebase(newBusiness);
         }
         // Success
         logger.e("User signed up successfully: ${newUserModel.toJson()}");
@@ -291,34 +300,16 @@ class AuthenticationProvider with ChangeNotifier {
     }
   }
 
-  /*Future<void> signIn(String identifier, String password, BuildContext context) async {
-    try {
-      if (identifier.contains('@') && !identifier.contains('.com')) {
-        // Employee login
-        final parts = identifier.split('@');
-        final username = parts[0];
-        final businessName = parts[1];
-
-        Business? business = await businessService.getBusinessByName(businessName);
-        if (business == null) throw Exception('Business not found.');
-
-        Employee? employee = business.employees.firstWhere(
-              (e) => e.name == username && UserModel.verifyPassword(password, e.password),
-          orElse: () => null,
-        );
-
-        if (employee == null) throw Exception('Invalid credentials.');
-
-        print("Employee logged in: ${employee.name}");
-      } else {
-        // Admin login
-        User? firebaseUser = await authService.signIn(identifier, password);
-        print("Admin logged in: ${firebaseUser?.email}");
-      }
-    } catch (e) {
-      print("Error during sign-in: $e");
-      errorMessage = e.toString();
-    }
-  }*/
-
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    pwController.dispose();
+    emailController.dispose();
+    bizEmailController.dispose();
+    bizNameController.dispose();
+    bizPhoneNumberController.dispose();
+    nameController.dispose();
+    addressController.dispose();
+    super.dispose();
+  }
 }

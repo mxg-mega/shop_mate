@@ -1,8 +1,8 @@
 import 'package:shop_mate/models/base_model.dart';
-import 'package:shop_mate/models/users/constants_enums.dart';
+import 'package:shop_mate/core/utils/constants_enums.dart';
 
 class Employee extends BaseModel {
-  final RoleTypes role;
+  final UserRole role;
   final String businessId;
   final String password;
 
@@ -11,7 +11,7 @@ class Employee extends BaseModel {
     required this.businessId,
     required this.password,
     required super.name,
-    required super.id,
+    required super.id, required String email,
   });
 
   @override
@@ -29,9 +29,11 @@ class Employee extends BaseModel {
       id: json['id'] as String,
       name: json['name'] as String,
       password: json['password'] as String,
-      role: RoleTypes.values.firstWhere(
+      email: json['email'] as String,
+      // role: UserRole.values.byName(json['role'] as String),
+      role: UserRole.values.firstWhere(
         (r) => r.name == json['role'] as String,
-        orElse: () => RoleTypes.staff,
+        orElse: () => UserRole.staff,
       ),
       businessId: json['businessId'] as String,
     );

@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 import 'package:shop_mate/providers/authentication_provider.dart';
-import 'package:shop_mate/providers/sidebar_provider.dart';
+import 'package:shop_mate/providers/navigation_provider.dart';
 import 'package:shop_mate/providers/session_provider.dart';
 import 'package:shop_mate/providers/theme_provider.dart';
 import 'package:shop_mate/firebase_options.dart';
@@ -42,8 +42,8 @@ Future<void> main() async {
             create: (_) => AuthenticationProvider()),
         ChangeNotifierProvider<SessionProvider>(
             create: (_) => SessionProvider()..listenToAuthChanges()),
-        ChangeNotifierProvider<SidebarProvider>(
-            create: (_) => SidebarProvider()),
+        ChangeNotifierProvider<NavigationProvider>(
+            create: (_) => NavigationProvider()),
       ],
       child: const MyApp(),
     ),

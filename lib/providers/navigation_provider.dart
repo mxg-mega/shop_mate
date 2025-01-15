@@ -1,20 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:icons_plus/icons_plus.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 import 'package:shop_mate/screens/dashboard/dashboard_screen.dart';
 import 'package:shop_mate/screens/expenses_screen.dart';
 import 'package:shop_mate/screens/inventory_screen.dart';
+import 'package:shop_mate/screens/profile_screen.dart';
 import 'package:shop_mate/screens/sales_screen.dart';
+import 'package:shop_mate/screens/settings_screen.dart';
 import 'package:shop_mate/screens/zakat_screen.dart';
-import '../models/users/constants_enums.dart';
+import '../core/utils/constants_enums.dart';
 import '../screens/home/navigation_item_model.dart';
 
-class SidebarProvider extends ChangeNotifier {
+class NavigationProvider extends ChangeNotifier {
   bool _isSidebarExpanded = true;
   int _selectedIndex = 0;
-  String _activeModule = 'dashboard';
 
   int get selectedIndex => _selectedIndex;
+
   bool get isSidebarExpanded => _isSidebarExpanded;
+
+  double currentWidth = 70;
+
+  NavigationItem getActiveScreen(int index) => _navigationItems[index];
 
   final List<NavigationItem> _navigationItems = const [
     NavigationItem(
@@ -52,27 +59,36 @@ class SidebarProvider extends ChangeNotifier {
       allowedRoles: [UserRole.admin, UserRole.accountant],
       screen: const ZakatScreen(),
     ),
+    NavigationItem(
+        id: 'settings',
+        label: 'Settings',
+        icon: LucideIcons.settings,
+        allowedRoles: [UserRole.admin, UserRole.staff],
+      screen: const SettingsScreen(),
+    ),
+    NavigationItem(
+      id: 'profile',
+      label: 'Profile',
+      icon: LucideIcons.settings,
+      allowedRoles: [UserRole.admin, UserRole.staff],
+      screen: ProfileScreen(),
+    ),
   ];
 
   List<NavigationItem> getAvailableItems(UserRole userRole) {
-    return _navigationItems.where(
-            (item) => item.allowedRoles.contains(userRole)
-    ).toList();
+    return _navigationItems
+        .where((item) => item.allowedRoles.contains(userRole))
+        .toList();
   }
 
-  set activeModule(String value) {
-    _activeModule = value;
-    notifyListeners();
-  }
-
-  void toggleSideBar() {
+  void toggleSidebar() {
     _isSidebarExpanded = !_isSidebarExpanded;
     notifyListeners();
   }
 
   void setSelectedIndex(int index) {
     _selectedIndex = index;
+
     notifyListeners();
   }
-
 }

@@ -1,5 +1,5 @@
 import 'package:shop_mate/models/businesses/features_model.dart';
-import 'package:shop_mate/models/users/constants_enums.dart';
+import 'package:shop_mate/core/utils/constants_enums.dart';
 
 class Subscription {
   final String tier; // e.g., "Free", "Basic", "Standard", "Premium"
