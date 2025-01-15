@@ -34,7 +34,7 @@ class SessionProvider with ChangeNotifier {
 
   // Firebase services
   final FirebaseAuth auth = FirebaseAuth.instance;
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  // final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final _userServices = UserServices();
   final _bizServices = BusinessServices();
 
