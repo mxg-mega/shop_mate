@@ -17,10 +17,13 @@ enum Features{
   settings,
 }
 
-enum RoleTypes {
+enum UserRole {
   none,
   admin,
   staff,
+  manager,
+  employee,
+  accountant,
   customer,
 }
 
