@@ -47,6 +47,7 @@ dependencies:
   shadcn_flutter: ^0.0.22
   sidebarx: ^0.17.1
   logger: ^2.5.0
+  flutter_local_notifications:
 
 dev_dependencies:
   flutter_test:

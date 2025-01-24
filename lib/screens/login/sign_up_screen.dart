@@ -61,17 +61,16 @@ class SignUpScreen extends StatelessWidget {
                         );
                       } catch (e) {
                         print('Error Signing Up.......!');
-                          ErrorToaster(
-                              context: context,
-                              message: 'Error Creating User',
-                              isDestructive: true);
-                        }
+                        ErrorNotificationService.showErrorToaster(
+                          message: 'Error Creating User',
+                          isDestructive: true,
+                        );
+                      }
                     } else {
                       print("Validation Failed");
-                      ErrorToaster(
-                          context: context,
+                      ErrorNotificationService.showErrorToaster(
                           message: 'Validation Failed',
-                          isDestructive: true);
+                          isDestructive: true,);
                     }
                   },
                 ),

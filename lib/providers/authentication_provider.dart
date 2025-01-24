@@ -198,6 +198,11 @@ class AuthenticationProvider with ChangeNotifier {
       print("Admin/Customer signed in: ${firebaseUser.email}");
     } catch (e) {
       print("Sign-in error: $e");
+      ErrorNotificationService.showErrorToaster(
+      message: "Login Failed",
+      description: e.toString(),
+      isDestructive: true,
+    );
     }
   }
 
@@ -278,22 +283,19 @@ class AuthenticationProvider with ChangeNotifier {
         }
         // Success
         logger.e("User signed up successfully: ${newUserModel.toJson()}");
-        if (context.mounted) {
-          ErrorToaster(
-            context: context,
-            message: "User signed up successfully",
-          );
-        }
+        ErrorNotificationService.showErrorToaster(
+      message: "Signup Successfully",
+      isDestructive: true,
+    );
       }
     } catch (e) {
       errorMessage = e.toString();
       print("Error during sign-up: $e");
-      ErrorToaster(
-        context: context,
-        message: "Error during sign-up:",
-        description: errorMessage,
-        isDestructive: true,
-      );
+      ErrorNotificationService.showErrorToaster(
+      message: "Signup Failed",
+      description: e.toString(),
+      isDestructive: true,
+    );
     } finally {
       _isLoading = false;
       notifyListeners();

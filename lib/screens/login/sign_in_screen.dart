@@ -19,7 +19,8 @@ class SignInScreen extends StatelessWidget {
 
     final themeProv = Provider.of<ThemeProvider>(context);
     final authProv = Provider.of<AuthenticationProvider>(context);
-    final sessionProvider = Provider.of<SessionProvider>(context, listen: false);
+    final sessionProvider =
+        Provider.of<SessionProvider>(context, listen: false);
 
     return ShadForm(
       key: formKey,
@@ -92,18 +93,15 @@ class SignInScreen extends StatelessWidget {
                             emailController.text, pwController.text, context);
                       } else {
                         print("You are an Admin/Customer");
-                        await authProv.signInAdminCustomer(
-                            emailController.text, pwController.text, context, sessionProvider);
+                        await authProv.signInAdminCustomer(emailController.text,
+                            pwController.text, context, sessionProvider);
                       }
                     } catch (e) {
                       print(e);
                     }
-                    if (authProv.isLoading && context.mounted) {
-                      ErrorToaster(
-                        context: context,
-                        message: 'User Signing In...',
-                      );
-                    }
+                    ErrorNotificationService.showErrorToaster(
+                      message: 'User Signing In...',
+                    );
                   } else {
                     print("Validation Failed");
                   }

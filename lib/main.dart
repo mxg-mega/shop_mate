@@ -13,6 +13,8 @@ import 'package:shop_mate/firebase_options.dart';
 import 'package:shop_mate/screens/auth_screen.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
@@ -45,13 +47,13 @@ Future<void> main() async {
         ChangeNotifierProvider<NavigationProvider>(
             create: (_) => NavigationProvider()),
       ],
-      child: const MyApp(),
+      child: MyApp(),
     ),
   );
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  MyApp({super.key});
 
   // This widget is the root of your application.
   @override
@@ -60,6 +62,7 @@ class MyApp extends StatelessWidget {
     ScreenUtil.init(context);
 
     return ShadApp.material(
+      navigatorKey: navigatorKey,
       debugShowCheckedModeBanner: false,
       theme: ShadThemeData(
         brightness: Brightness.light,

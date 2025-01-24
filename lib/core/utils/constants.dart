@@ -21,6 +21,9 @@ class Storage {
   static const String businesses = 'Businesses';
   static const String inventory = 'Inventory';
   static const String employees = 'Employees';
+  static const String sales = 'Sales';
+  static const String expenses = 'Expenses';
+  static const String budget = 'Budget';
 }
 
 List<Map<String, dynamic>> modules = [

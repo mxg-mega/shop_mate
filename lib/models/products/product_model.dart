@@ -1,5 +1,7 @@
 import 'package:shop_mate/models/base_model.dart';
 import 'package:shop_mate/models/businesses/business_settings.dart';
+import 'package:shop_mate/models/inventory/inventory_item_model.dart';
+import 'package:shop_mate/models/inventory/inventory_model.dart';
 import 'package:shop_mate/models/products/product_unit.dart';
 import 'package:shop_mate/models/unit_system/units_model.dart';
 
@@ -19,8 +21,8 @@ class Product extends BaseModel {
   final String businessId;
   final ProductCategory category;
   final String? description;
-  double salesPrice = 0.0;
-  double costPrice = 0.0;
+  final double salesPrice;
+  final double costPrice;
   final List<ProductUnit> productUnits;
   final String baseUnit;
   double stockQuantity;
@@ -47,7 +49,11 @@ class Product extends BaseModel {
   }) : productUnits = productUnits ?? defaultProductUnits;
 
   static final List<ProductUnit> defaultProductUnits = [
-    ProductUnit(unit: Unit(name: 'unit', symbol: 'unit', conversionRate: 1), price: 0.0, isBaseUnit: true, costPrice: 0.0),
+    ProductUnit(
+        unit: Unit(name: 'unit', symbol: 'unit', conversionRate: 1),
+        price: 0.0,
+        isBaseUnit: true,
+        costPrice: 0.0),
   ];
 
   ProductStatus get status {
@@ -71,6 +77,30 @@ class Product extends BaseModel {
     }
     if (productUnits.isEmpty) {
       throw Exception('Product units cannot be empty.');
+    }
+  }
+
+  // Method to update inventory when a sale is made
+  /*void updateInventoryOnSale(int quantitySold, String location) {
+    final inventoryItem = inventoryItems.firstWhere(
+      (item) => item.location == location,
+      orElse: () => InventoryItem.defaultItem(),
+    );
+    if (inventoryItem != InventoryItem.defaultItem()) {
+      inventoryItem.quantity -= quantitySold;
+      inventoryItem.lastUpdated = DateTime.now();
+      inventoryItem.status = _calculateStatus(inventoryItem.quantity);
+    }
+  }*/
+
+  // Method to calculate the inventory status based on quantity
+  InventoryStatus _calculateStatus(int quantity) {
+    if (quantity <= 0) {
+      return InventoryStatus.outOfStock;
+    } else if (quantity < 10) {
+      return InventoryStatus.lowStock;
+    } else {
+      return InventoryStatus.inStock;
     }
   }
 
@@ -111,6 +141,7 @@ class Product extends BaseModel {
         'isActive': isActive,
         'sku': sku,
         'status': status.name,
+        // 'inventoryItems': inventoryItems.map((i) => i.toJson()).toList(),
       });
   }
 
@@ -134,6 +165,12 @@ class Product extends BaseModel {
       imageUrl: json['imageUrl'] as String?,
       isActive: json['isActive'] as bool? ?? true,
       sku: json['sku'] as String,
+      // inventoryItems: (json['inventoryItems'] as List<dynamic>)
+      //     .map(
+            // (itemJson) =>
+            //     InventoryItem.fromJson(itemJson as Map<String, dynamic>),
+          // )
+          // .toList(),
     );
   }
 }
