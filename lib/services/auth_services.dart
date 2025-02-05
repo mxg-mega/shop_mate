@@ -7,17 +7,19 @@ import 'package:logger/logger.dart';
 import 'package:shop_mate/core/utils/constants.dart';
 import 'package:shop_mate/core/utils/constants_enums.dart';
 import 'package:shop_mate/models/users/user_model.dart';
+import 'package:shop_mate/services/firebase_CRUD_service.dart';
 import 'package:shop_mate/services/firebase_services.dart';
 import 'package:shop_mate/services/storage_services.dart';
 
-class MyAuthService {
-  // final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final FirebaseAuth _auth = FirebaseAuth.instance;
+import '../core/error/my_exceptions.dart';
+import '../models/users/employee_model.dart';
 
-  // final MyFirebaseService<UserModel> userService;
+class MyAuthService {
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   /// Constructor
-  // MyAuthService();
+  MyAuthService();
 
   /// Registers new users
   UserModel createUserModel({
@@ -46,6 +48,49 @@ class MyAuthService {
     );
     logger.e("created the UserMode: ${newUserModel.toString()}");
     return newUserModel;
+  }
+
+  // --------------------------
+  // 1. Firebase Auth (Admins/Customers)
+  // --------------------------
+  Future<User?> signInAdminCustomer(String email, String password) async {
+    try {
+      final credential = await _auth.signInWithEmailAndPassword(
+        email: email, password: password,);
+
+      return credential.user;
+    } on FirebaseException catch (e) {
+      throw AuthException(e.code, "Admin/Customer SignIn-Failed");
+    }
+  }
+
+  // --------------------------
+  // 2. Employee Auth
+  // --------------------------
+  Future<Employee> signInEmployee(String username, String businessId,
+      String password) async {
+    try {
+      final employeesService = FirebaseCRUDService<Employee>(
+          collectionName: Storage.employees,
+          fromJson: (json) => Employee.fromJson(json),
+          businessId: businessId);
+      final employeeDoc = await employeesService.collection.where(
+        'username', isEqualTo: username,).get();
+
+      if(employeeDoc.docs.isEmpty){
+        throw AuthException('not-found', "Employee not found");
+      }
+
+      final employee = Employee.fromJson(employeeDoc.docs.first.data());
+      if (!UserModel.verifyPassword(password, employee.password)) {
+        throw AuthException("wrong-password", "Invalid Credentials");
+      }
+
+      return employee;
+
+    } on FirebaseException catch (e){
+      throw AuthException(e.code, "Employee sign-in failed");
+    }
   }
 
   Future<User?> registerUser(String email, String password) async {
@@ -79,29 +124,6 @@ class MyAuthService {
     }
   }
 
-  // /// Authenticates a user by email and password.
-  // Future<UserModel?> authenticateUser({
-  //   required String email,
-  //   required String password,
-  // }) async {
-  //   final querySnapshot = await _firestore
-  //       .collection('users')
-  //       .where('email', isEqualTo: email)
-  //       .get();
-
-  //   if (querySnapshot.docs.isEmpty) {
-  //     throw Exception('User not found');
-  //   }
-
-  //   final userDoc = querySnapshot.docs.first;
-  //   final user = userService.fromJson(userDoc.data() as Map<String, dynamic>);
-
-  //   if (UserModel.verifyPassword(password, user.password)) {
-  //     return user;
-  //   } else {
-  //     throw Exception('Invalid credentials');
-  //   }
-  // }
 
   /// Sign out the user.
   Future<void> signOut() async {

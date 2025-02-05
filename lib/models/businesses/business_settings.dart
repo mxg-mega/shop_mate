@@ -22,7 +22,7 @@ class BusinessSettings {
   factory BusinessSettings.defaultSettings(String businessId) {
     return BusinessSettings(
       businessId: businessId,
-      currency: 'USD',
+      currency: 'NGN',
       timezone: 'UTC',
       defaultUnitSystem: UnitSystem.defaultSystem(),
       additionalUnitSystems: [],
@@ -55,4 +55,23 @@ class BusinessSettings {
       'unitSystem': unitSystem.toJson(),
     };
   }
+
+  BusinessSettings copyWith({
+    String? businessId,
+    String? currency,
+    String? timezone,
+    UnitSystem? defaultUnitSystem,
+    List<UnitSystem>? additionalUnitSystems,
+    UnitSystem? unitSystem,
+  }) {
+    return BusinessSettings(
+      businessId: businessId ?? this.businessId,
+      currency: currency ?? this.currency,
+      timezone: timezone ?? this.timezone,
+      defaultUnitSystem: defaultUnitSystem ?? this.defaultUnitSystem,
+      additionalUnitSystems: additionalUnitSystems ?? this.additionalUnitSystems,
+      unitSystem: unitSystem ?? this.unitSystem,
+    );
+  }
+
 }

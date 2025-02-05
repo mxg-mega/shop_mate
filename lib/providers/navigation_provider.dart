@@ -4,7 +4,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 import 'package:shop_mate/screens/dashboard/dashboard_screen.dart';
 import 'package:shop_mate/screens/expenses_screen.dart';
 import 'package:shop_mate/screens/inventory_screen.dart';
-import 'package:shop_mate/screens/profile_screen.dart';
+import 'package:shop_mate/screens/profile/profile_screen.dart';
 import 'package:shop_mate/screens/sales_screen.dart';
 import 'package:shop_mate/screens/settings_screen.dart';
 import 'package:shop_mate/screens/zakat_screen.dart';

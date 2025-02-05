@@ -26,13 +26,18 @@ class UserServices {
     }
   }
 
-  Future<void> updateUserInfo(
+  Future<UserModel> updateUserInfo(
       String userID, Map<String, dynamic> updates) async {
     try {
       await FirebaseFirestore.instance
           .collection(Storage.users)
           .doc(userID)
           .update(updates);
+      final userModel = await _firebaseService.read(userID);
+      if (userModel == null){
+        throw Exception("Could not get the user");
+      }
+      return userModel;
     } on FirebaseException catch (e) {
       throw Exception("Failed to save user updates: ${e.toString()}");
     }

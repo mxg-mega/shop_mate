@@ -112,4 +112,35 @@ class UserModel extends BaseModel {
       profilePicture: parts[10],
     );
   }
+
+  /// Creates a new instance with updated fields while retaining unchanged ones.
+  @override
+  UserModel copyWith({
+    String? id,
+    String? name,
+    String? email,
+    String? password,
+    String? phoneNumber,
+    String? profilePicture,
+    UserRole? role,
+    String? businessID,
+    bool? isActive,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) {
+    return UserModel(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      email: email ?? this.email,
+      password: password ?? this.password,
+      role: role ?? this.role,
+      businessID: businessID ?? this.businessID,
+      phoneNumber: phoneNumber ?? this.phoneNumber,
+      profilePicture: profilePicture ?? this.profilePicture,
+      isActive: isActive ?? this.isActive,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
 }

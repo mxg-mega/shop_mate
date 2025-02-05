@@ -4,8 +4,15 @@
 // Set up Themes - hD
 // setting up firebase backend (models included) - P
 
-// Create a sidebar item builder
-// 
+// Start With inventory:
+// creation of product and saving
+// editing of product info
+// querying of products
+// the UI is Already set
+//
+// Secondly work on sales creation and saving
+// the sales recording
+// receipt creation
 
 // how would you get the users name and information making it static across teh session
 // follow the UI Mock up by 

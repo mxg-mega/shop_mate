@@ -16,7 +16,6 @@ class SignInScreen extends StatelessWidget {
     final emailController = TextEditingController();
     final pwController = TextEditingController();
     final formKey = GlobalKey<ShadFormState>();
-
     final themeProv = Provider.of<ThemeProvider>(context);
     final authProv = Provider.of<AuthenticationProvider>(context);
     final sessionProvider =

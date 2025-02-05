@@ -47,12 +47,12 @@ class SignUpScreen extends StatelessWidget {
                       try {
                         print('Signing up .......');
                         await authProv.signUp(
-                          context,
-                          authProv.emailController.text,
-                          authProv.pwController.text,
-                          authProv.nameController.text,
-                          authProv.phoneNumberController.text,
-                          authProv.selectedRole,
+                          context: context,
+                          email: authProv.emailController.text,
+                          password: authProv.pwController.text,
+                          name: authProv.nameController.text,
+                          phoneNumber: authProv.phoneNumberController.text,
+                          role: authProv.selectedRole,
                           businessAddress: authProv.addressController.text,
                           businessName: authProv.bizNameController.text,
                           businessPhone: authProv.bizPhoneNumberController.text,

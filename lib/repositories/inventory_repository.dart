@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shop_mate/models/inventory/inventory_item_model.dart';
-import 'package:shop_mate/models/inventory/inventory_model.dart';
 import 'package:shop_mate/services/firebase_services.dart';
 import 'package:shop_mate/core/utils/constants.dart';
 
@@ -9,6 +8,13 @@ class InventoryRepository {
     collectionName: Storage.inventory,
     fromJson: (data) => InventoryItem.fromJson(data),
   );
+
+  final FirebaseFirestore _firestore;
+  InventoryRepository() : _firestore = FirebaseFirestore.instance;
+
+  DocumentReference getDocumentReference(String id){
+    return _firebaseService.getDocRef(id);
+  }
 
   Future<void> createInventoryItem(InventoryItem item) async {
     await _firebaseService.create(item);

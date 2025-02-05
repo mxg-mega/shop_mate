@@ -9,6 +9,10 @@ enum ProductCategory {
   electronics,
   clothing,
   homeGoods,
+  food,
+  drinks,
+  homeAppliances,
+  others
 }
 
 enum ProductStatus {
@@ -28,7 +32,7 @@ class Product extends BaseModel {
   double stockQuantity;
   final String? imageUrl;
   final bool isActive;
-  final String sku;
+  final String? sku;
 
   Product({
     required super.id,
@@ -55,6 +59,29 @@ class Product extends BaseModel {
         isBaseUnit: true,
         costPrice: 0.0),
   ];
+
+  String get baseUnitSymbol => productUnits
+      .firstWhere((unit) => unit.isBaseUnit)
+      .unit
+      .symbol;
+
+  InventoryItem createInventoryItem({
+    required String location,
+    required double initialStock,
+  }) {
+    return InventoryItem(
+      id: DateTime.now().millisecondsSinceEpoch.toString(), // Or use UUID
+      productId: id,
+      businessId: businessId,
+      name: name,
+      quantity: initialStock.toInt(),
+      status: InventoryItem.calculateStatus(initialStock.toInt()),
+      costPrice: costPrice,
+      salesPrice: salesPrice,
+      location: location,
+      baseUnit: baseUnitSymbol,
+    );
+  }
 
   ProductStatus get status {
     if (stockQuantity <= 0) {
@@ -94,7 +121,7 @@ class Product extends BaseModel {
   }*/
 
   // Method to calculate the inventory status based on quantity
-  InventoryStatus _calculateStatus(int quantity) {
+  InventoryStatus calculateStatus(int quantity) {
     if (quantity <= 0) {
       return InventoryStatus.outOfStock;
     } else if (quantity < 10) {

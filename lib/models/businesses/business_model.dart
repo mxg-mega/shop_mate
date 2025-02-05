@@ -51,7 +51,7 @@ class Business extends BaseModel {
       subscription: json['subscription'] != null
           ? Subscription.fromJson(json['subscription'] as Map<String, dynamic>)
           : Subscription.defaultSubscription(),
-      bizIdentifier: json['bizIdentifier'] as String,
+      bizIdentifier: json['bizIdentifier'] as String?,
       businessSettings: json['businessSettings'] != null
           ? BusinessSettings.fromJson(json['businessSettings'] as Map<String, dynamic>)
           : BusinessSettings.defaultSettings(json['ownerId'] as String),
@@ -73,6 +73,40 @@ class Business extends BaseModel {
         'bizIdentifier': bizIdentifier,
         'businessSettings': businessSettings?.toJson(),
       });
+  }
+
+  /// Creates a new instance with updated fields while retaining unchanged ones.
+  @override
+  Business copyWith({
+    String? id,
+    String? name,
+    String? email,
+    String? phone,
+    String? address,
+    BusinessCategories? businessType,
+    String? ownerId,
+    String? token,
+    List<Employee>? employees,
+    Subscription? subscription,
+    String? bizIdentifier,
+    BusinessSettings? businessSettings,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) {
+    return Business(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      email: email ?? this.email,
+      phone: phone ?? this.phone,
+      address: address ?? this.address,
+      businessType: businessType ?? this.businessType,
+      ownerId: ownerId ?? this.ownerId,
+      token: token ?? this.token,
+      employees: employees ?? this.employees,
+      subscription: subscription ?? this.subscription,
+      bizIdentifier: bizIdentifier ?? this.bizIdentifier,
+      businessSettings: businessSettings ?? this.businessSettings,
+    );
   }
 
   @override

@@ -7,13 +7,20 @@ class MyInputFormField extends StatelessWidget {
   const MyInputFormField(
       {super.key,
       required this.placeholder,
+        this.label,
       this.keyboardType,
       this.validator,
       this.controller,
-      this.obscureText});
+      this.obscureText,
+        this.onSaved,
+        this.onChanged,
+      });
   final String placeholder;
+  final String? label;
   final TextInputType? keyboardType;
   final String? Function(String)? validator;
+  final void Function(String?)? onSaved;
+  final void Function(String?)? onChanged;
   final TextEditingController? controller;
   final bool? obscureText;
 
@@ -22,6 +29,9 @@ class MyInputFormField extends StatelessWidget {
     final themeProv = Provider.of<ThemeProvider>(context);
 
     return ShadInputFormField(
+      label: label == null ? null : Text(label?? ' '),
+      onChanged: onChanged,
+      onSaved: onSaved,
       placeholder: Text(placeholder),
       controller: controller,
       keyboardType: keyboardType ?? TextInputType.text,

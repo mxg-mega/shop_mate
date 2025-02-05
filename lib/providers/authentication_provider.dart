@@ -5,6 +5,7 @@ import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 import 'package:shop_mate/core/error/error_toaster.dart';
+import 'package:shop_mate/core/error/my_exceptions.dart';
 import 'package:shop_mate/core/utils/constants.dart';
 import 'package:shop_mate/models/businesses/business_model.dart';
 import 'package:shop_mate/core/utils/constants_enums.dart';
@@ -12,6 +13,7 @@ import 'package:shop_mate/models/users/user_model.dart';
 import 'package:shop_mate/providers/session_provider.dart';
 import 'package:shop_mate/services/auth_services.dart';
 import 'package:shop_mate/services/business_services.dart';
+import 'package:shop_mate/services/firebase_CRUD_service.dart';
 import 'package:shop_mate/services/firebase_services.dart';
 import 'package:shop_mate/services/storage_services.dart';
 import 'package:shop_mate/services/user_services.dart';
@@ -22,6 +24,7 @@ class AuthenticationProvider with ChangeNotifier {
   bool _isLoading = false;
   bool showSignIn = true;
   String errorMessage = '';
+  FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   final pwController = TextEditingController();
   final nameController = TextEditingController();
@@ -60,67 +63,39 @@ class AuthenticationProvider with ChangeNotifier {
     notifyListeners();
   }
 
-/*  Future<void> signIn(String identifier, String password, BuildContext context) async {
+  void SignIn(String identifier, String password) async {
     _isLoading = true;
     notifyListeners();
 
     try {
-      if (identifier.contains('@') && !identifier.contains('.com')) {
-        // Employee Login
+      if (identifier.contains('@') && !identifier.contains('.')) {
         final parts = identifier.split('@');
         final username = parts[0];
-        final businessName = parts[1];
+        final businessIdentifier = parts[1];
 
-        // Fetch business
-        Business? business = await bizService.getBusinessByName(businessName);
-        if (business == null) throw Exception('Business not found.');
+        final businessDoc = await _firestore
+            .collection(Storage.businesses)
+            .where('identifier', isEqualTo: identifier)
+            .limit(1)
+            .get();
+        if (businessDoc.docs.isEmpty){
+          throw AuthException('employee-not-found', "Invalid Business Identifier");
+        }
 
-        // Validate employee
-        Employee? employee = business.employees.firstWhere(
-              (e) => e.name == username && UserModel.verifyPassword(password, e.password),
-          orElse: () => null,
-        );
-        if (employee == null) throw Exception('Invalid employee credentials.');
+        final businessId = businessDoc.docs.first.id;
+        final employee = await authService.signInEmployee(username, businessId, password);
 
-        logger.d("Employee logged in: ${employee.name}");
-        // Set session for employee
-        Provider.of<SessionProvider>(context, listen: false).setSession(
-          role: RoleTypes.staff,
-          userId: employee.id,
-          businessId: business.id,
-        );
-      } else if (identifier.contains('.com')) {
-        // Admin or Customer Login
-        User? firebaseUser = await authService.signIn(identifier, password);
-        if (firebaseUser == null) throw Exception('Invalid admin credentials.');
 
-        logger.d("Admin logged in: ${firebaseUser.email}");
-        // Fetch user data
-        UserModel? user = await UserServices().fetchUserModel(firebaseUser.uid);
-        if (user == null) throw Exception('User data not found.');
 
-        // Set session for admin
-        Provider.of<SessionProvider>(context, listen: false).setSession(
-          role: user.role,
-          userId: user.id,
-          businessId: user.businessID,
-        );
-      } else {
-        throw Exception("Invalid identifier format.");
       }
     } catch (e) {
-      logger.e("Sign-in error: $e");
-      ErrorToaster(
-        context: context,
-        message: "Login Failed",
-        description: e.toString(),
+      ErrorNotificationService.showErrorToaster(
+        message: e.toString(),
+        description: "Failed to Sign In",
         isDestructive: true,
       );
-    } finally {
-      _isLoading = false;
-      notifyListeners();
     }
-  }*/
+  }
 
   Future<void> signInEmployee(
       String identifier, String password, BuildContext context) async {
@@ -137,8 +112,9 @@ class AuthenticationProvider with ChangeNotifier {
 
     // final businessId = businessQuery.docs.first.id;
     final businessId = await bizService.getBusinessByName(businessName);
-    if (businessId == null)
+    if (businessId == null) {
       throw Exception("Cannot find business with identifier $businessName");
+    }
 
     // Fetch employee
     QuerySnapshot employeeQuery = await FirebaseFirestore.instance
@@ -158,51 +134,41 @@ class AuthenticationProvider with ChangeNotifier {
     }
 
     // Set session
-    Provider.of<SessionProvider>(context, listen: false).setSession(
-      role: UserRole.staff,
-      userId: employeeQuery.docs.first.id,
-      businessId: businessId.id,
-      userData: employeeData,
-      userModel: employeeModel,
-    );
+    // Provider.of<SessionProvider>(context, listen: false).setSession(
+    //   role: UserRole.staff,
+    //   userId: employeeQuery.docs.first.id,
+    //   businessId: businessId.id,
+    //   userData: employeeData,
+    //   userModel: employeeModel,
+    // );
 
     print("Employee signed in: ${employeeData['name']}");
   }
 
   Future<void> signInAdminCustomer(String email, String password,
-      BuildContext context, dynamic sessionProvider) async {
+      BuildContext context, SessionProvider sessionProvider) async {
+    _isLoading = true;
+    notifyListeners();
     try {
       User? firebaseUser = await authService.signIn(email, password);
       if (firebaseUser == null) throw Exception('Invalid credentials.');
 
-      // Fetch user data
-      /*DocumentSnapshot userDoc = await FirebaseFirestore.instance
-          .collection(Storage.users)
-          .doc(firebaseUser.uid)
-          .get();
-      Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;*/
-
-      final userModel = await userServices.getUserData(firebaseUser.uid);
-      if (userModel == null)
-        throw Exception("Unable to get user with id: ${firebaseUser.uid}");
-
       // Set session
-      sessionProvider.setSession(
-        role: userModel.role,
+      await sessionProvider.setSession(
         userId: firebaseUser.uid,
-        businessId: userModel.businessID,
-        userData: userModel.toJson(),
-        userModel: userModel,
       );
 
       print("Admin/Customer signed in: ${firebaseUser.email}");
     } catch (e) {
       print("Sign-in error: $e");
       ErrorNotificationService.showErrorToaster(
-      message: "Login Failed",
-      description: e.toString(),
-      isDestructive: true,
-    );
+        message: "Login Failed",
+        description: e.toString(),
+        isDestructive: true,
+      );
+    } finally {
+      _isLoading = false;
+      notifyListeners();
     }
   }
 
@@ -222,18 +188,18 @@ class AuthenticationProvider with ChangeNotifier {
   }
 
   /// Create user, userModel, businessModel and link them together
-  Future<void> signUp(
-    BuildContext context,
-    String email,
-    String password,
-    String name,
-    String phoneNumber,
-    UserRole role, {
-    String? businessName,
-    String? businessAddress,
+  Future<void> signUp({
+    required BuildContext context,
+    required String email,
+    required String password,
+    required String name,
+    required String phoneNumber,
+    required UserRole role,
+    required String businessName,
+    required String businessAddress,
     String? businessPhone,
     String? businessEmail,
-    BusinessCategories? businessCategory,
+    required BusinessCategories businessCategory,
   }) async {
     _isLoading = true;
     notifyListeners();
@@ -261,12 +227,13 @@ class AuthenticationProvider with ChangeNotifier {
 
         // Step 3: Handle Business Creation (if admin role)
         if (role == UserRole.admin) {
+          // TODO: NOT URGENT* Check why email and phone number are not automatically assigned when null.
           Business newBusiness = bizService.createBusiness(
-            name: businessName!,
+            name: businessName,
             email: businessEmail ?? email,
             phone: businessPhone ?? phoneNumber,
-            address: businessAddress!,
-            businessType: businessCategory!,
+            address: businessAddress,
+            businessType: businessCategory,
             ownerID: newFireBaseUser.uid,
           );
 
@@ -274,9 +241,7 @@ class AuthenticationProvider with ChangeNotifier {
           await userServices.updateUserInfo(
               newFireBaseUser.uid, newUserModel.toJson());
           SessionProvider().setSession(
-              role: newUserModel.role,
-              userId: newUserModel.id,
-              userModel: newUserModel,
+            userId: newUserModel.id,
           );
 
           if (role == UserRole.admin) bizService.saveToFirebase(newBusiness);
@@ -284,18 +249,18 @@ class AuthenticationProvider with ChangeNotifier {
         // Success
         logger.e("User signed up successfully: ${newUserModel.toJson()}");
         ErrorNotificationService.showErrorToaster(
-      message: "Signup Successfully",
-      isDestructive: true,
-    );
+          message: "Signup Successfully",
+          isDestructive: true,
+        );
       }
     } catch (e) {
       errorMessage = e.toString();
       print("Error during sign-up: $e");
       ErrorNotificationService.showErrorToaster(
-      message: "Signup Failed",
-      description: e.toString(),
-      isDestructive: true,
-    );
+        message: "Signup Failed",
+        description: e.toString(),
+        isDestructive: true,
+      );
     } finally {
       _isLoading = false;
       notifyListeners();

@@ -44,18 +44,35 @@ class BusinessServices {
     }
   }
 
-  Future<Business?> getBusinessById(String? id) async {
+  Future<Business> getBusinessById(String id) async {
     logger.d("Fetching Business....");
-    if (id == null) {
-      throw Exception(
-          "Business ID cannot be null.\n - business Getter By Business Services.");
-    }
+    // if (id == null) {
+    //   throw Exception(
+    //       "Business ID cannot be null.\n - business Getter By Business Services.");
+    // }
     try {
+      logger.d("$id");
       final bizInfo = await businessService.read(id);
+      if (bizInfo == null){
+        throw Exception("business was not found");
+      }
       return bizInfo;
     } catch (e) {
-      logger.e("Failed to fetch biz");
+      logger.e("Failed to fetch biz: $e");
       throw Exception("Could not get Biz");
+    }
+  }
+
+  Future<Business> updateBusiness(String id, Map<String, dynamic> updates) async {
+    try {
+      await businessService.update(id, updates);
+      final biz = await businessService.read(id);
+      if (biz == null){
+        throw Exception("Error Updating business");
+      }
+      return biz;
+    }catch (e){
+      throw Exception("Could not update business");
     }
   }
 

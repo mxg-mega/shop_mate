@@ -17,7 +17,14 @@ void main() {
         businessType: BusinessCategories.retail,
         ownerId: 'owner1',
         employees: [
-          Employee(id: 'emp1', name: 'Employee 1', email: 'emp1@example.com', role: UserRole.staff, businessId: '123456778', password: 'password'),
+          Employee(
+            id: 'emp1',
+            name: 'Employee 1',
+            email: 'emp1@example.com',
+            role: UserRole.staff,
+            businessId: '123456778',
+            password: 'password',
+          ),
         ],
         subscription: Subscription.defaultSubscription(),
         businessSettings: BusinessSettings.defaultSettings('owner1'),
@@ -45,7 +52,13 @@ void main() {
         businessType: BusinessCategories.retail,
         ownerId: 'owner1',
         employees: [
-          Employee(id: 'emp1', name: 'Employee 1', email: 'emp1@example.com', role: UserRole.staff, businessId: '123456778', password: 'password'),
+          Employee(
+              id: 'emp1',
+              name: 'Employee 1',
+              email: 'emp1@example.com',
+              role: UserRole.staff,
+              businessId: '123456778',
+              password: 'password'),
         ],
         subscription: Subscription.defaultSubscription(),
         businessSettings: BusinessSettings.defaultSettings('owner1'),

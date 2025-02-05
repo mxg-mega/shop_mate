@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shop_mate/core/error/my_exceptions.dart';
 import 'package:shop_mate/models/businesses/business_model.dart';
 import 'package:shop_mate/models/businesses/business_settings.dart';
 import 'package:shop_mate/services/business_services.dart';
@@ -12,16 +13,19 @@ import 'package:shop_mate/services/user_services.dart';
 import '../core/utils/constants.dart';
 import '../models/base_model.dart';
 import '../core/utils/constants_enums.dart';
+import '../models/users/employee_model.dart';
 import '../models/users/user_model.dart';
 
 class SessionProvider with ChangeNotifier {
   bool isLoading = false;
+
   // Session details
   String? _userId;
   String? _businessId;
   UserRole? _role;
   Map<String, dynamic>? _userData;
   UserModel? _userModel;
+  Employee? _currentEmployee;
   Business? _business;
   BusinessSettings? _businessSettings;
   Map<String, dynamic> collections = {
@@ -34,25 +38,51 @@ class SessionProvider with ChangeNotifier {
 
   // Firebase services
   final FirebaseAuth auth = FirebaseAuth.instance;
+
   // final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final _userServices = UserServices();
   final _bizServices = BusinessServices();
 
   // Getters
   String? get userId => _userId;
+
   String? get businessId => _businessId;
+
   UserModel? get userModel => _userModel;
+
+  Employee? get currentEmployee => _currentEmployee;
+
+  bool get isEmployee => _currentEmployee != null;
+
+  set userModel(value) {
+    _userModel = value;
+    notifyListeners();
+  }
+
   Business? get business => _business;
+
+  set business(value) {
+    _business = value;
+    notifyListeners();
+  }
+
   BusinessSettings? get businessSettings => _businessSettings;
+
   UserRole? get role => _role;
+
   Map<String, dynamic>? get userData => _userData;
+
   bool get isLoggedIn => _userId != null;
+
   Stream<User?> get firebaseAuthStream => auth.authStateChanges();
+
   Stream<bool> get customSessionStream => _customSessionStreamController.stream;
 
   // Fetch role-specific flags
   bool get isAdmin => _role == UserRole.admin;
+
   bool get isStaff => _role == UserRole.staff;
+
   bool get isCustomer => _role == UserRole.customer;
 
   // StreamController for custom session management
@@ -68,7 +98,6 @@ class SessionProvider with ChangeNotifier {
       if (user != null) {
         // Fetch user data from Firestore
         final userDoc = await _userServices.getUserData(user.uid);
-        
 
         if (userDoc != null) {
           _userData = userDoc.toJson();
@@ -103,20 +132,52 @@ class SessionProvider with ChangeNotifier {
   }
 
   // Set session data after login
-  void setSession({
-    required UserRole role,
+  Future<void> setSession({
     required String userId,
-    String? businessId,
-    Map<String, dynamic>? userData,
-    required dynamic userModel,
+  }) async {
+    try {
+      final userService = UserServices();
+      var userModel = await userService.getUserData(userId);
+      if (userModel == null) {
+        throw Exception("Could not get User info to\n Session Provider");
+      }
+      print("Setting Session with user ${userModel.toJson()}");
+      _role = userModel.role;
+      _userId = userId;
+      _businessId = userModel.businessID;
+      logger.d('Business ID: $_businessId');
+      _userData = userModel.toJson();
+      _userModel = userModel;
+
+      _customSessionStreamController.add(true);
+      if (_businessId != null) {
+        collections['business'] =
+            await _bizServices.getBusinessById(_businessId!);
+      }
+      _business = collections['business'];
+      setCurrentSessionValues(userModel: userModel, businessModel: collections['business']);
+      print("${(collections['business'] as Business).toJson()}");
+      notifyListeners();
+    } catch (e) {
+      throw Exception("Could not initialize session: $e");
+    }
+  }
+
+  void setCurrentSessionValues({
+    UserModel? userModel,
+    Employee? employeeModel,
+    required Business businessModel,
   }) {
-    print("Setting Session with user ${userModel.toJson()}");
-    _role = role;
-    _userId = userId;
-    _businessId = businessId;
-    _userData = userData;
+    if (userModel != null && employeeModel != null){
+      throw SessionException('user and employee not null', "either user or employee must be null");
+    }
+    isLoading = true;
+    notifyListeners();
     _userModel = userModel;
-    _customSessionStreamController.add(true);
+    _currentEmployee = employeeModel;
+    _business = businessModel;
+    _businessSettings = _business?.businessSettings;
+    isLoading = false;
     notifyListeners();
   }
 
@@ -132,6 +193,7 @@ class SessionProvider with ChangeNotifier {
     _role = null;
     _userData = null;
     _userModel = null;
+    _currentEmployee = null;
     _customSessionStreamController.add(false);
     notifyListeners();
   }
