@@ -3,7 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:icons_plus/icons_plus.dart';
 import 'package:logger/logger.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
-import 'package:shop_mate/core/utils/layouts/responsive_layout.dart';
+import 'package:shop_mate/features/responsive_design/layouts/responsive_layout.dart';
 
 const mobileWidth = 650;
 const desktopWidth = 1100;
@@ -24,6 +24,7 @@ class Storage {
   static const String sales = 'Sales';
   static const String expenses = 'Expenses';
   static const String budget = 'Budget';
+  static const String products = 'Products';
 }
 
 List<Map<String, dynamic>> modules = [

@@ -6,13 +6,13 @@ class NavigationItem {
   final String label;
   final IconData icon;
   final List<UserRole> allowedRoles;
-  final Widget? screen;
+  final Widget screen;
 
   const NavigationItem({
     required this.id,
     required this.label,
     required this.icon,
     required this.allowedRoles,
-    this.screen,
+    required this.screen,
   });
 }

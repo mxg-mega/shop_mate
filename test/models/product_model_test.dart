@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:shop_mate/models/products/product_model.dart';
-import 'package:shop_mate/models/products/product_unit.dart';
-import 'package:shop_mate/models/unit_system/units_model.dart';
+import 'package:shop_mate/data/models/products/product_model.dart';
+import 'package:shop_mate/data/models/products/product_unit.dart';
+import 'package:shop_mate/data/models/unit_system/units_model.dart';
 
 void main() {
   group('Product Model Tests', () {

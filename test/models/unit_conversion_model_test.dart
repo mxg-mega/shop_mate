@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:shop_mate/models/unit_system/unit_conversion.dart';
-import 'package:shop_mate/models/unit_system/units_model.dart';
+import 'package:shop_mate/data/models/unit_system/unit_conversion.dart';
+import 'package:shop_mate/data/models/unit_system/units_model.dart';
 
 void main() {
   group('UnitConversion Model Tests', () {

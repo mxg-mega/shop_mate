@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:shop_mate/models/businesses/business_settings.dart';
-import 'package:shop_mate/models/unit_system/unit_sytem.dart';
+import 'package:shop_mate/data/models/businesses/business_settings.dart';
+import 'package:shop_mate/data/models/unit_system/unit_sytem.dart';
 
 void main() {
   group('BusinessSettings Model Tests', () {

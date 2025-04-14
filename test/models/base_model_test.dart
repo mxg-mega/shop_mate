@@ -1,5 +1,5 @@
 import 'package:test/test.dart';
-import 'package:shop_mate/models/base_model.dart';
+import 'package:shop_mate/data/models/base_model.dart';
 
 void main() {
   group('BaseModel', () {

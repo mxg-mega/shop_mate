@@ -3,6 +3,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:icons_plus/icons_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
+import 'package:shop_mate/data/datasource/local/business_storage.dart';
+import 'package:shop_mate/data/datasource/local/user_storage.dart';
 import 'package:shop_mate/providers/authentication_provider.dart';
 import 'package:shop_mate/providers/navigation_provider.dart';
 import 'package:shop_mate/providers/session_provider.dart';
@@ -14,7 +16,7 @@ import '../../../core/utils/constants.dart';
 import '../../../core/utils/constants_enums.dart';
 
 class ResponsiveNavigation extends StatelessWidget {
-  ResponsiveNavigation({
+  const ResponsiveNavigation({
     super.key,
     required this.userRole,
   });
@@ -25,7 +27,6 @@ class ResponsiveNavigation extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = ShadTheme.of(context);
     final sidebarProv = Provider.of<NavigationProvider>(context);
-    final sessionProv = Provider.of<SessionProvider>(context);
     final authService = MyAuthService();
     final availableItems = sidebarProv.getAvailableItems(userRole);
     bool isExtended = sidebarProv.isSidebarExpanded;
@@ -190,22 +191,27 @@ class ResponsiveNavigation extends StatelessWidget {
                   ),
                 ),
               ),
-              if (isExtended) ListTile(
-                leading: const Icon(
-                  LucideIcons.logOut,
-                  color: Colors.red,
-                ),
-                title: Text(
-                  "LOGOUT",
-                  style: ShadTheme.of(context).textTheme.p.copyWith(
-                        color: Colors.red,
-                      ),
-                ),
-                onTap: () {
-                  sessionProv.auth.signOut();
-                  authService.signOut();
-                },
-              )
+              if (isExtended)
+                ListTile(
+                  leading: const Icon(
+                    LucideIcons.logOut,
+                    color: Colors.red,
+                  ),
+                  title: Text(
+                    "LOGOUT",
+                    style: ShadTheme.of(context).textTheme.p.copyWith(
+                          color: Colors.red,
+                        ),
+                  ),
+                  onTap: () {
+                    // sessionProv.auth.signOut();
+                    // sessionProv.clearSession();
+                    authService.signOut();
+                    UserStorage.logout();
+                    BusinessStorage.logout();
+                    // Navigator.of(context).pushReplacementNamed('/login');
+                  },
+                )
             ],
           ),
         ),

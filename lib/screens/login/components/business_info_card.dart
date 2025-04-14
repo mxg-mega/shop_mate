@@ -1,17 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 import 'package:shop_mate/core/utils/constants_enums.dart';
 import 'package:shop_mate/providers/authentication_provider.dart';
 import 'package:shop_mate/screens/login/components/constants.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:shop_mate/screens/login/utils/login_controller.dart';
 
-class BusinessInfoCard extends StatelessWidget {
-  const BusinessInfoCard({
+class BusinessInfoSection extends StatelessWidget {
+  const BusinessInfoSection({
     super.key,
     required this.cardTitle,
+    required this.controller,
   });
   final String cardTitle;
+  final LoginController controller;
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +24,7 @@ class BusinessInfoCard extends StatelessWidget {
 
     return ConstrainedBox(
       constraints: BoxConstraints(
-        maxWidth: 150.w,
+        minWidth: 220.w,
       ),
       child: ShadCard(
         title: Text(
@@ -34,7 +37,7 @@ class BusinessInfoCard extends StatelessWidget {
             ShadInputFormField(
               label: importantLabel('Business Name', context),
               placeholder: const Text('Business Name'),
-              controller: authProv.bizNameController,
+              controller: controller.bizNameController,
               keyboardType: TextInputType.name,
               validator: (value) => validate(
                   value,
@@ -67,7 +70,7 @@ class BusinessInfoCard extends StatelessWidget {
               label: const Text('Phone Number'),
               placeholder: const Text('Phone Number'),
               keyboardType: TextInputType.phone,
-              controller: authProv.bizPhoneNumberController,
+              controller: controller.bizPhoneNumberController,
               validator: (value) {
                 if (value.length > 2 &&
                     !value.contains(RegExp(r'^(\+234|0)([789]\d{9})$'))) {
@@ -85,7 +88,7 @@ class BusinessInfoCard extends StatelessWidget {
               label: importantLabel('Address', context),
               placeholder: const Text('Address'),
               keyboardType: TextInputType.streetAddress,
-              controller: authProv.addressController,
+              controller: controller.addressController,
               validator: (v) => validate(
                 v,
                 'Please Enter business Address',
@@ -98,7 +101,9 @@ class BusinessInfoCard extends StatelessWidget {
             ShadSelectFormField<BusinessCategories>(
               id: 'business_type',
               label: importantLabel('Select Business Type', context),
-              onChanged: (c) => authProv.setCategory(c!),
+              onChanged: (c) {
+                controller.businessCategory = c!;
+              },
               itemCount: BusinessCategories.values.length,
               initialValue: BusinessCategories.none,
               options: BusinessCategories.values

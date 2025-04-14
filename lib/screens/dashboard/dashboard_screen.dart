@@ -5,7 +5,7 @@ import 'package:shadcn_ui/shadcn_ui.dart';
 import 'package:shop_mate/core/utils/constants_enums.dart';
 
 class DashboardScreen extends StatelessWidget {
-  const DashboardScreen({Key? key}) : super(key: key);
+  const DashboardScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -123,7 +123,7 @@ class DashboardScreen extends StatelessWidget {
       ),
       lineBarsData: [
         LineChartBarData(
-          spots: [
+          spots: const [
             FlSpot(0, 2.5),
             FlSpot(1, 2.8),
             FlSpot(2, 2.3),
@@ -176,7 +176,7 @@ class StatCard extends StatelessWidget {
               fontWeight: FontWeight.bold,
             ),
           ),
-          SizedBox(height: 8.h),
+          SizedBox(height: 2.h),
           Row(
             children: [
               Icon(
@@ -187,10 +187,12 @@ class StatCard extends StatelessWidget {
               SizedBox(width: 4.w),
               Text(
                 '${percentage.abs()}%',
+                overflow: TextOverflow.ellipsis,
                 style: ShadTheme.of(context).textTheme.p.copyWith(
                   color: isPositive ? Colors.green : Colors.red,
                   fontWeight: FontWeight.bold,
                 ),
+                softWrap: true,
               ),
             ],
           ),

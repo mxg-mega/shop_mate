@@ -5,18 +5,25 @@ import 'package:shadcn_ui/shadcn_ui.dart';
 import 'package:shop_mate/core/error/error_toaster.dart';
 import 'package:shop_mate/core/utils/constants.dart';
 import 'package:shop_mate/core/utils/constants_enums.dart';
-import 'package:shop_mate/models/businesses/business_model.dart';
-import 'package:shop_mate/models/users/user_model.dart';
+import 'package:shop_mate/data/datasource/local/business_storage.dart';
+import 'package:shop_mate/data/datasource/local/user_storage.dart';
+import 'package:shop_mate/data/models/businesses/business_model.dart';
+import 'package:shop_mate/data/models/users/user_model.dart';
+import 'package:shop_mate/providers/authentication_provider.dart';
 import 'package:shop_mate/screens/login/components/my_input_form_field.dart';
+import 'package:shop_mate/services/business_service.dart';
 import 'package:shop_mate/services/business_services.dart';
 import 'package:shop_mate/services/user_services.dart';
 
 import '../../providers/session_provider.dart';
 
 class EditProfileScreen extends StatefulWidget {
-  const EditProfileScreen({super.key, required this.sessionProvider});
+  const EditProfileScreen({
+    super.key,
+    // required this.sessionProvider,
+  });
 
-  final SessionProvider sessionProvider;
+  // final SessionProvider sessionProvider;
 
   @override
   State<EditProfileScreen> createState() => _EditProfileScreenState();
@@ -31,27 +38,30 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   TextEditingController addressController = TextEditingController();
   TextEditingController bizPhoneController = TextEditingController();
   TextEditingController bizEmailController = TextEditingController();
+  // final userModel = UserStorage.getUserProfile();
+  // final business = BusinessStorage.getBusinessProfile();
 
   @override
   void initState() {
-    // TODO: implement initState
-    nameController.text = widget.sessionProvider.userModel!.name;
-    emailController.text = widget.sessionProvider.userModel!.email;
-    phoneController.text = widget.sessionProvider.userModel!.phoneNumber!;
-    bizNameController.text = widget.sessionProvider.business!.name;
-    addressController.text = widget.sessionProvider.business!.address;
-    bizPhoneController.text = widget.sessionProvider.business!.phone;
-    bizEmailController.text = widget.sessionProvider.business!.email!;
-    currencyController.text =
-        widget.sessionProvider.business!.businessSettings!.currency;
+    final userModel = context.read<AuthenticationProvider>().currentUser!;
+    final business = BusinessService.instance.currentBusiness!;
+    nameController.text = userModel.name;
+    emailController.text = userModel.email;
+    phoneController.text = userModel!.phoneNumber!;
+    bizNameController.text = business!.name;
+    addressController.text = business!.address;
+    bizPhoneController.text = business!.phone!;
+    bizEmailController.text = business!.email!;
+    currencyController.text = business!.businessSettings!.currency;
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
     final formKey = GlobalKey<ShadFormState>();
-    Business? tempBiz = widget.sessionProvider.business;
-    UserModel? tempUser = widget.sessionProvider.userModel;
+    final authProv = Provider.of<AuthenticationProvider>(context);
+    Business? tempBiz = BusinessService.instance.currentBusiness!;
+    UserModel? tempUser = authProv.currentUser;
 
     return Scaffold(
       appBar: AppBar(
@@ -77,8 +87,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       controller: nameController,
                       label: 'Name',
                       onSaved: (value) {
-                        print("$value");
-                        tempUser = tempUser!.copyWith(name: value);
+                        print("$value ===== ${tempUser!.toJson()}");
+                        tempUser = tempUser!
+                            .copyWith(name: value!.trim(), updates: null);
+                        print('===================== ${tempUser!.toJson()}');
                       },
                       onChanged: (value) {
                         // print("Current letters: $value");
@@ -105,14 +117,16 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     ),
                     ShadSelectFormField<UserRole>(
                       itemCount: UserRole.values.length,
-                      initialValue: widget.sessionProvider.userModel!.role,
+                      initialValue: authProv.currentUser!.role,
                       options: UserRole.values
                           .map((role) =>
                               ShadOption(value: role, child: Text(role.name)))
                           .toList(),
                       selectedOptionBuilder: (context, role) => role ==
-                              widget.sessionProvider.userModel!.role
-                          ? Text(widget.sessionProvider.userModel!.role.name)
+                              // UserStorage.getUserProfile()!.role
+                              // BusinessService.instance.businessId,
+                              authProv.currentUser!.role
+                          ? Text(authProv.currentUser!.role.name)
                           : Text(role.name),
                       onSaved: (value) {
                         print("${value!.name}");
@@ -176,33 +190,29 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               ),
               ShadButton(
                   onPressed: () async {
-                    try {
-                      final userService = UserServices();
-                      final bizServices = BusinessServices();
-                      // TODO: to improve, i think making a separate function in session Provider to update the
-                      // the info would be best, so that i can make the isloading functionalble
+                    if (formKey.currentState!.saveAndValidate()) {
+                      final updatedUser = authProv.currentUser!.copyWith(
+                        name: nameController.text.trim(),
+                        email: emailController.text.trim(),
+                        phoneNumber: phoneController.text.trim(),
+                        role: authProv.currentUser!
+                            .role, // keep the existing role for now
+                      );
 
-                      if (formKey.currentState!.saveAndValidate()) {
-                        logger.d(
-                            "Before: ${widget.sessionProvider.business!.phone} ${widget.sessionProvider.business!.email}");
-                        widget.sessionProvider.business = tempBiz;
-                        widget.sessionProvider.userModel = tempUser;
-                        logger.d(
-                            "After: ${widget.sessionProvider.business!.phone} ${widget.sessionProvider.business!.email}");
-                        widget.sessionProvider.userModel =
-                            await userService.updateUserInfo(
-                                widget.sessionProvider.userModel!.id,
-                                tempUser!.toJson());
-                        widget.sessionProvider.business =
-                            await bizServices.updateBusiness(
-                                widget.sessionProvider.business!.id,
-                                tempBiz!.toJson());
-                        ErrorNotificationService.showErrorToaster(
-                            message: "Successfully updated Information");
-                      }
-                    } catch (e) {
-                      ErrorNotificationService.showErrorToaster(
-                          message: "Error Updating Information: $e");
+                      final updatedBusiness = tempBiz!.copyWith(
+                        name: bizNameController.text.trim(),
+                        email: bizEmailController.text.trim(),
+                        phone: bizPhoneController.text.trim(),
+                        address: addressController.text.trim(),
+                        businessSettings: tempBiz!.businessSettings?.copyWith(
+                          currency: currencyController.text.trim(),
+                        ),
+                      );
+
+                      await authProv.updateUserAndBusinessInfo(
+                        updatedUser: updatedUser,
+                        updatedBusiness: updatedBusiness,
+                      );
                     }
                   },
                   icon: const Icon(LucideIcons.save),

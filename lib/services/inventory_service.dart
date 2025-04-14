@@ -1,11 +1,14 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shop_mate/core/error/inventory_exceptions.dart';
 import 'package:shop_mate/core/utils/constants.dart';
-import 'package:shop_mate/models/inventory/inventory_cache_manager.dart';
-import 'package:shop_mate/models/inventory/inventory_item_model.dart';
-import 'package:shop_mate/models/inventory/inventory_model.dart';
-import 'package:shop_mate/models/unit_system/unit_sytem.dart';
-import 'package:shop_mate/repositories/inventory_repository.dart';
+import 'package:shop_mate/data/datasource/local/business_storage.dart';
+import 'package:shop_mate/data/datasource/repositories/inventory_repository.dart';
+import 'package:shop_mate/data/models/inventory/inventory_cache_manager.dart';
+import 'package:shop_mate/data/models/inventory/inventory_item_model.dart';
+import 'package:shop_mate/data/models/inventory/inventory_model.dart';
+import 'package:shop_mate/data/models/unit_system/unit_sytem.dart';
+import 'package:shop_mate/services/business_service.dart';
+import 'package:shop_mate/services/firebase_CRUD_service.dart';
 
 class InventoryService {
   final InventoryRepository _repository;
@@ -13,11 +16,10 @@ class InventoryService {
   final InventoryCache _cache;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  InventoryService({
-    required UnitSystem unitSystem,
-    required InventoryRepository repository,
-  })  : _unitSystem = unitSystem,
-        _repository = repository,
+  InventoryService()
+      : _unitSystem =
+            BusinessService.instance.currentBusiness!.businessSettings?.unitSystem ?? UnitSystem.defaultSystem(),
+        _repository = InventoryRepository(),
         _cache = InventoryCache();
 
   Future<void> transferStock({
@@ -147,13 +149,14 @@ class InventoryService {
 
   Future<InventoryItem> getInventoryItem(String id) async {
     final cachedItem = _cache.getItem(id);
-    if (cachedItem != null){
+    if (cachedItem != null) {
       return cachedItem;
     }
 
     final item = await _repository.getInventoryItemById(id);
-    if (item == null){
-      throw InventoryException('Inventory item not found', code: 'ITEM_NOT_FOUND');
+    if (item == null) {
+      throw InventoryException('Inventory item not found',
+          code: 'ITEM_NOT_FOUND');
     }
 
     _cache.cacheItem(item);
@@ -178,15 +181,30 @@ class InventoryService {
   }
 
   Stream<List<InventoryItem>> streamInventoryItems() {
-    return _repository.streamInventoryItems();
+    try {
+      final rawStream = _repository.streamInventoryItems();
+      return FirebaseCRUDService.ensureMainThreadStream(rawStream);
+    } catch (e) {
+      logger.d("Services: $e");
+      rethrow;
+    }
   }
+
+  CollectionReference get collection => _repository.getCollection();
 
   Future<List<InventoryItem>> getInventoryItemsPaginated({
     required int limit,
     DocumentSnapshot? startAfter,
   }) async {
-    return await _repository.getInventoryItemsPaginated(
-        limit: limit, startAfter: startAfter);
+    try {
+      return await _repository.getInventoryItemsPaginated(
+          limit: limit, startAfter: startAfter);
+    } catch (e) {
+      print('Inventory service ${e}');
+      throw InventoryException(
+        'Failed to get inventory items',
+      );
+    }
   }
 }
 

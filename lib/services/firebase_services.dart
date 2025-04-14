@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:shop_mate/models/base_model.dart';
+import 'package:flutter/material.dart';
+import 'package:shop_mate/data/datasource/local/business_storage.dart';
+import 'package:shop_mate/data/models/base_model.dart';
 
 import '../core/utils/constants.dart';
 
@@ -22,7 +24,7 @@ class MyFirebaseService<T extends BaseModel> {
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  // final businessId =
+  final businessId = BusinessStorage.getBusinessProfile()?.id ?? '';
 
   // Get collection reference with business scope
   // CollectionReference<Map<String, dynamic>> get collection =>
@@ -32,8 +34,7 @@ class MyFirebaseService<T extends BaseModel> {
   Future<void> create(T model) async {
     try {
       print(
-          'My Firebase CRUD Service creating document:\n ${model
-              .toJson()}\n.......');
+          'My Firebase CRUD Service creating document:\n ${model.toJson()}\n.......');
       await _firestore
           .collection(collectionName)
           .doc(model.id)
@@ -50,9 +51,9 @@ class MyFirebaseService<T extends BaseModel> {
   Future<T?> read(String id) async {
     try {
       final doc = await _firestore.collection(collectionName).doc(id).get();
-      return doc.exists ? fromJson(doc.data() as Map<String, dynamic>) : null;
+      return doc.exists ? fromJson(doc.data()!) : null;
     } catch (e) {
-      print("Error reading document: $e");
+      debugPrint("Error reading document: $e");
       throw Exception("Read operation failed");
     }
   }
@@ -60,8 +61,10 @@ class MyFirebaseService<T extends BaseModel> {
   /// Reads a document by its name from Firestore.
   Future<T?> readByName(String name) async {
     try {
-      final doc = await _firestore.collection(collectionName).where(
-          'name', isEqualTo: name).get();
+      final doc = await _firestore
+          .collection(collectionName)
+          .where('name', isEqualTo: name)
+          .get();
       logger.d("Gotten ${doc.docs.first.data()} by name");
       return doc.docs.isEmpty ? fromJson(doc.docs.first.data()) : null;
     } catch (e) {
@@ -105,25 +108,29 @@ class MyFirebaseService<T extends BaseModel> {
 
   /// Streams a list of documents in real-time.
   Stream<List<T>> list() {
-    return _firestore.collection(collectionName).orderBy(
-        'createdAt', descending: true).snapshots().map((snapshot) =>
-        snapshot.docs.map((doc) => fromJson(doc.data())).toList());
+    return _firestore
+        .collection(collectionName)
+        .orderBy('createdAt', descending: true)
+        .snapshots()
+        .map((snapshot) =>
+            snapshot.docs.map((doc) => fromJson(doc.data())).toList());
   }
 
-/// Retrieves a paginated list of documents from Fire store.
-Future<List<T>> paginatedList({
-  required int limit,
-  DocumentSnapshot? startAfter,
-}) async {
-  try {
-    var query = _firestore.collection(collectionName).limit(limit);
-    if (startAfter != null) {
-      query = query.startAfterDocument(startAfter);
+  /// Retrieves a paginated list of documents from Fire store.
+  Future<List<T>> paginatedList({
+    required int limit,
+    DocumentSnapshot? startAfter,
+  }) async {
+    try {
+      var query = _firestore.collection(collectionName).limit(limit);
+      if (startAfter != null) {
+        query = query.startAfterDocument(startAfter);
+      }
+      final querySnapshot = await query.get();
+      return querySnapshot.docs.map((doc) => fromJson(doc.data())).toList();
+    } catch (e) {
+      print("Error fetching paginated list: $e");
+      throw Exception("Pagination failed");
     }
-    final querySnapshot = await query.get();
-    return querySnapshot.docs.map((doc) => fromJson(doc.data())).toList();
-  } catch (e) {
-    print("Error fetching paginated list: $e");
-    throw Exception("Pagination failed");
   }
-}}
+}

@@ -1,16 +1,21 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shop_mate/core/utils/constants.dart';
-import 'package:shop_mate/models/users/user_model.dart';
+import 'package:shop_mate/data/models/users/user_model.dart';
+import 'package:shop_mate/services/firebase_CRUD_service.dart';
 import 'package:shop_mate/services/firebase_services.dart';
 
 class UserServices {
-  final MyFirebaseService<UserModel> _firebaseService =
-      MyFirebaseService<UserModel>(
+  // final MyFirebaseService<UserModel> _firebaseService =
+  //     MyFirebaseService<UserModel>(
+  //   collectionName: Storage.users,
+  //   fromJson: (data) => UserModel.fromJson(data),
+  // );
+  final FirebaseCRUDService<UserModel> _firebaseService =
+      FirebaseCRUDService<UserModel>(
     collectionName: Storage.users,
     fromJson: (data) => UserModel.fromJson(data),
+    isSubcollection: false,
   );
-
   Future<void> storeUser(UserModel user) async {
     try {
       logger.d("Saving .....");
@@ -29,12 +34,13 @@ class UserServices {
   Future<UserModel> updateUserInfo(
       String userID, Map<String, dynamic> updates) async {
     try {
-      await FirebaseFirestore.instance
-          .collection(Storage.users)
-          .doc(userID)
-          .update(updates);
+      // await FirebaseFirestore.instance
+      //     .collection(Storage.users)
+      //     .doc(userID)
+      //     .update(updates);
+      await _firebaseService.update(userID, updates: updates);
       final userModel = await _firebaseService.read(userID);
-      if (userModel == null){
+      if (userModel == null) {
         throw Exception("Could not get the user");
       }
       return userModel;
@@ -48,14 +54,16 @@ class UserServices {
   }
 
   Future<UserModel?> fetchUserModel(String id) async {
-    try{
-      final userDoc = await FirebaseFirestore.instance.collection(Storage.users).doc(id).get();
-      if (userDoc.exists){
+    try {
+      final userDoc = await FirebaseFirestore.instance
+          .collection(Storage.users)
+          .doc(id)
+          .get();
+      if (userDoc.exists) {
         final userJson = userDoc.data();
         return UserModel.fromJson(userJson!);
       }
-    }
-    catch (e){
+    } catch (e) {
       logger.e("Failed to get user...");
       return null;
     }

@@ -1,5 +1,5 @@
-import 'package:shop_mate/models/budget/budget_model.dart';
-import 'package:shop_mate/repositories/budget_repository.dart';
+import 'package:shop_mate/data/datasource/repositories/budget_repository.dart';
+import 'package:shop_mate/data/models/budget/budget_model.dart';
 
 class BudgetService {
   final BudgetRepository _budgetRepo;

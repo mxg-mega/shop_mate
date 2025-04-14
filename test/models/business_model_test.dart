@@ -1,9 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shop_mate/core/utils/constants_enums.dart';
-import 'package:shop_mate/models/businesses/business_model.dart';
-import 'package:shop_mate/models/businesses/subscription_model.dart';
-import 'package:shop_mate/models/businesses/business_settings.dart';
-import 'package:shop_mate/models/users/employee_model.dart';
+import 'package:shop_mate/data/models/businesses/business_model.dart';
+import 'package:shop_mate/data/models/businesses/subscription_model.dart';
+import 'package:shop_mate/data/models/businesses/business_settings.dart';
+import 'package:shop_mate/data/models/users/employee_model.dart';
 
 void main() {
   group('Business Model Tests', () {
@@ -24,6 +24,7 @@ void main() {
             role: UserRole.staff,
             businessId: '123456778',
             password: 'password',
+              businessAbbrev: "TST"
           ),
         ],
         subscription: Subscription.defaultSubscription(),
@@ -58,7 +59,9 @@ void main() {
               email: 'emp1@example.com',
               role: UserRole.staff,
               businessId: '123456778',
-              password: 'password'),
+              password: 'password',
+              businessAbbrev: "TST"
+          ),
         ],
         subscription: Subscription.defaultSubscription(),
         businessSettings: BusinessSettings.defaultSettings('owner1'),

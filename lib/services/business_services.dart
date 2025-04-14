@@ -1,20 +1,45 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
 import 'package:shop_mate/core/utils/constants.dart';
-import 'package:shop_mate/models/businesses/business_model.dart';
-import 'package:shop_mate/models/token_generator.dart';
 import 'package:shop_mate/core/utils/constants_enums.dart';
-
-import 'package:shop_mate/services/firebase_services.dart';
+import 'package:shop_mate/data/datasource/local/business_storage.dart';
+import 'package:shop_mate/data/models/businesses/business_model.dart';
+import 'package:shop_mate/data/models/token_generator.dart';
+import 'package:shop_mate/services/firebase_CRUD_service.dart';
 
 class BusinessServices {
+  static final BusinessServices _instance = BusinessServices._internal();
+
+  factory BusinessServices() => _instance;
+
+  BusinessServices._internal();
+
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final MyFirebaseService<Business> businessService = MyFirebaseService(
-      collectionName: Storage.businesses,
-      fromJson: (data) => Business.fromJson(data));
+  final FirebaseCRUDService<Business> businessService = FirebaseCRUDService(
+    collectionName: Storage.businesses,
+    fromJson: (data) => Business.fromJson(data),
+    isSubcollection: false,
+    // businessID: BusinessStorage.getBusinessProfile()?.id ?? ''
+  );
+  // final MyFirebaseService<Business> businessService = MyFirebaseService(
+  //   collectionName: Storage.businesses,
+  //   fromJson: (data) => Business.fromJson(data),
+  // );
+
+  // businessService.businessId = BusinessStorage.getBusinessProfile().id!;
+
+  Future<Business> fetchBusiness(String id) async {
+    try {
+      final response = await businessService.read(id);
+      return response!;
+    } catch (e) {
+      throw Exception('Failed to fetch business');
+    }
+  }
 
   static int id = 0;
 
-  Business createBusiness({
+  static Business createBusiness({
     required String name,
     required String email,
     required String phone,
@@ -23,7 +48,7 @@ class BusinessServices {
     required String ownerID,
   }) {
     final newBusiness = Business(
-      id: _firestore.collection(Storage.businesses).doc().id,
+      id: FirebaseFirestore.instance.collection(Storage.businesses).doc().id,
       name: name,
       email: email,
       phone: phone,
@@ -46,16 +71,16 @@ class BusinessServices {
 
   Future<Business> getBusinessById(String id) async {
     logger.d("Fetching Business....");
-    // if (id == null) {
-    //   throw Exception(
-    //       "Business ID cannot be null.\n - business Getter By Business Services.");
-    // }
     try {
-      logger.d("$id");
+      logger.d(id);
+      if (id.isEmpty) {
+        throw Exception('Empty id');
+      }
       final bizInfo = await businessService.read(id);
-      if (bizInfo == null){
+      if (bizInfo == null) {
         throw Exception("business was not found");
       }
+      debugPrint("${bizInfo.toJson()}");
       return bizInfo;
     } catch (e) {
       logger.e("Failed to fetch biz: $e");
@@ -63,20 +88,21 @@ class BusinessServices {
     }
   }
 
-  Future<Business> updateBusiness(String id, Map<String, dynamic> updates) async {
+  Future<Business> updateBusiness(
+      String id, Map<String, dynamic> updates) async {
     try {
-      await businessService.update(id, updates);
+      await businessService.update(id, updates: updates);
       final biz = await businessService.read(id);
-      if (biz == null){
+      if (biz == null) {
         throw Exception("Error Updating business");
       }
       return biz;
-    }catch (e){
+    } catch (e) {
       throw Exception("Could not update business");
     }
   }
 
-  void saveToFirebase(Business bizModel) async {
+  Future<void> saveToFirebase(Business bizModel) async {
     logger.d("Saving business to firestore......");
     try {
       await businessService.create(bizModel);
@@ -84,6 +110,21 @@ class BusinessServices {
     } catch (e) {
       logger.e("Failed to save business model to firebase");
       throw Exception("Failed to save to firebase");
+    }
+  }
+
+  Future<QuerySnapshot> fetchBusinessByAbbrev(String businessAbbrev) async {
+    try {
+      QuerySnapshot businessQuery = await FirebaseFirestore.instance
+          .collection(Storage.businesses)
+          .where('businessAbbrev', isEqualTo: businessAbbrev)
+          .get();
+      if (businessQuery.docs.isEmpty) {
+        throw Exception('Business not found.');
+      }
+      return businessQuery;
+    } catch (e) {
+      throw Exception('${e.toString()}');
     }
   }
 }

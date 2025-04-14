@@ -1,17 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 import 'package:shop_mate/core/utils/constants_enums.dart';
 import 'package:shop_mate/providers/authentication_provider.dart';
 import 'package:shop_mate/screens/login/components/constants.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:shop_mate/screens/login/utils/login_controller.dart';
 
-class UserInfoCard extends StatelessWidget {
-  const UserInfoCard({
+class UserInfoSection extends StatelessWidget {
+  const UserInfoSection({
     super.key,
     required this.cardTitle,
+    required this.controller,
   });
   final String cardTitle;
+  final LoginController controller;
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +24,10 @@ class UserInfoCard extends StatelessWidget {
     bool obsecure = true;
 
     return ConstrainedBox(
-      constraints: BoxConstraints(maxWidth: 150.w),
+      constraints: BoxConstraints(
+        // maxWidth: 150.w,
+        minWidth: 220.w,
+      ),
       child: ShadCard(
         title: Text(
           cardTitle,
@@ -34,7 +40,7 @@ class UserInfoCard extends StatelessWidget {
               label: importantLabel('Full name', context),
               placeholder: const Text('Full Name'),
               keyboardType: TextInputType.name,
-              controller: authProvider.nameController,
+              controller: controller.nameController,
               validator: (value) => validate(
                 value,
                 'Please Enter Your Full name',
@@ -58,12 +64,12 @@ class UserInfoCard extends StatelessWidget {
                   return null;
                 }
               },
-              controller: authProvider.emailController,
+              controller: controller.emailController,
             ),
             const Perimeter(height: 3),
             ShadInputFormField(
               label: importantLabel('Phone Number', context),
-              controller: authProvider.phoneNumberController,
+              controller: controller.phoneNumberController,
               placeholder: const Text('Phone Number'),
               keyboardType: TextInputType.phone,
               validator: (v) {
@@ -87,7 +93,7 @@ class UserInfoCard extends StatelessWidget {
                 }
                 return null;
               },
-              controller: authProvider.pwController,
+              controller: controller.pwController,
             ),
             const Perimeter(height: 3),
             ShadInputFormField(
@@ -96,7 +102,7 @@ class UserInfoCard extends StatelessWidget {
               obscureText: true,
               keyboardType: TextInputType.visiblePassword,
               validator: (p) {
-                if (p != authProvider.pwController.text) {
+                if (p != controller.pwController.text) {
                   return 'Please confirm the password correctly';
                 }
                 return null;
@@ -104,7 +110,9 @@ class UserInfoCard extends StatelessWidget {
             ),
             const Perimeter(height: 3),
             ShadSelectFormField<UserRole>(
-              onChanged: (r) => authProvider.setRole(r!),
+              onChanged: (r) {
+                controller.role = r!;
+              },
               label: importantLabel('User Role', context),
               id: 'user_role',
               itemCount: UserRole.values.length,

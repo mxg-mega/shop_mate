@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shop_mate/core/utils/constants.dart';
-import '../models/base_model.dart';
+import '../data/models/base_model.dart';
 
 abstract class BaseFirebaseService<T extends BaseModel> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;

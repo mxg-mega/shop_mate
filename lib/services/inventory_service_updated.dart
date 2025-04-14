@@ -1,11 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shop_mate/core/error/inventory_exceptions.dart';
 import 'package:shop_mate/core/utils/constants.dart';
-import 'package:shop_mate/models/inventory/inventory_cache_manager.dart';
-import 'package:shop_mate/models/inventory/inventory_item_model.dart';
-import 'package:shop_mate/models/inventory/inventory_model.dart';
-import 'package:shop_mate/models/unit_system/unit_sytem.dart';
-import 'package:shop_mate/repositories/inventory_repository.dart';
+import 'package:shop_mate/data/models/inventory/inventory_cache_manager.dart';
+import 'package:shop_mate/data/models/inventory/inventory_item_model.dart';
+import 'package:shop_mate/data/models/inventory/inventory_model.dart';
+import 'package:shop_mate/data/models/unit_system/unit_sytem.dart';
 import 'package:shop_mate/services/base_firebase_service.dart';
 
 class InventoryServiceUpdated extends BaseFirebaseService {
@@ -17,11 +16,6 @@ class InventoryServiceUpdated extends BaseFirebaseService {
 
   @override
   InventoryItem fromJson(Map<String, dynamic> json) => InventoryItem.fromJson(json);
-
-
-
-
-
 
 }
 

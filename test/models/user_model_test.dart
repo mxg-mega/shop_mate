@@ -1,5 +1,5 @@
 import 'package:test/test.dart';
-import 'package:shop_mate/models/users/user_model.dart';
+import 'package:shop_mate/data/models/users/user_model.dart';
 import 'package:shop_mate/core/utils/constants_enums.dart';
 
 void main() {

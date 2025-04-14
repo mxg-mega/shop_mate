@@ -1,12 +1,12 @@
 import 'package:shadcn_ui/shadcn_ui.dart';
-import 'package:shop_mate/models/budget/budget_analysis_model.dart';
-import 'package:shop_mate/models/expenses/expense_model.dart';
-import 'package:shop_mate/models/finance/financial_metrics.dart';
-import 'package:shop_mate/models/inventory/inventory_model.dart';
-import 'package:shop_mate/models/sales/sales.dart';
-import 'package:shop_mate/repositories/budget_repository.dart';
-import 'package:shop_mate/repositories/expense_repository.dart';
-import 'package:shop_mate/repositories/sales_repository.dart';
+import 'package:shop_mate/data/datasource/repositories/budget_repository.dart';
+import 'package:shop_mate/data/datasource/repositories/expense_repository.dart';
+import 'package:shop_mate/data/datasource/repositories/sales_repository.dart';
+import 'package:shop_mate/data/models/budget/budget_analysis_model.dart';
+import 'package:shop_mate/data/models/expenses/expense_model.dart';
+import 'package:shop_mate/data/models/finance/financial_metrics.dart';
+import 'package:shop_mate/data/models/inventory/inventory_model.dart';
+import 'package:shop_mate/data/models/sales/sales.dart';
 import 'package:shop_mate/services/analytics_service.dart';
 import 'package:shop_mate/services/inventory_service.dart';
 
