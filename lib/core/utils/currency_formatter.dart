@@ -24,17 +24,14 @@ String formatPrice({String? currency = '₦', required double price}) {
   final convertPrice = price.toStringAsFixed(2);
   // 100.00 split at '.'
   final splitPrice = convertPrice.split('.');
-  debugPrint('${splitPrice.toList()}');
   // count lenght of digits from right to left or invert and then start from left to right
   final int length = splitPrice[0].length;
   String formattedPrice = '';
   for (int i = length - 1; i >= 0; --i) {
-    debugPrint('before : $formattedPrice');
     formattedPrice += splitPrice[0][length - i - 1];
     if (i % 3 == 0 && i != 0) {
       formattedPrice += ',';
     }
-    debugPrint('after : $formattedPrice');
   }
   formattedPrice = '$formattedPrice.${splitPrice[1]}';
   // after every 3 digits shift digit forward and add a ','

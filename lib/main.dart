@@ -7,15 +7,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
+import 'package:shop_mate/core/themes/shadcn_themes.dart';
 import 'package:shop_mate/data/datasource/local/user_storage.dart';
 import 'package:shop_mate/firebase_options.dart';
 import 'package:shop_mate/providers/authentication_provider.dart';
 import 'package:shop_mate/providers/inventory_provider.dart';
 import 'package:shop_mate/providers/navigation_provider.dart';
-// import 'package:shop_mate/providers/session_provider.dart';
 import 'package:shop_mate/providers/theme_provider.dart';
 import 'package:shop_mate/screens/auth_screen.dart';
-// import 'package:shop_mate/services/auth_services.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
@@ -35,7 +34,7 @@ Future<void> main() async {
 
   if (!kIsWeb && Platform.isWindows) {
     try {
-      debugPrint("Firestore cache Clear...");
+      debugPrint("Firestore cache Clearing...");
       await FirebaseFirestore.instance.clearPersistence();
       debugPrint("Firestore cache Cleared");
     } catch (e) {
@@ -63,7 +62,7 @@ Future<void> main() async {
 }
 
 class MyApp extends StatelessWidget {
-  MyApp({super.key});
+  const MyApp({super.key});
 
   // This widget is the root of your application.
   @override
@@ -78,8 +77,12 @@ class MyApp extends StatelessWidget {
         brightness: Brightness.light,
         colorScheme: const ShadSlateColorScheme.light(),
       ),
+      // darkTheme: ShadThemeData(
+      //   colorScheme: const ShadSlateColorScheme.dark(),
+      //   brightness: Brightness.dark,
+      // ),
       darkTheme: ShadThemeData(
-        colorScheme: const ShadSlateColorScheme.dark(),
+        colorScheme: darkColorScheme,
         brightness: Brightness.dark,
       ),
       themeMode: themeProvider.themeMode,

@@ -4,21 +4,23 @@ import 'package:lucide_icons/lucide_icons.dart';
 import 'package:shop_mate/screens/dashboard/dashboard_screen.dart';
 import 'package:shop_mate/screens/expenses_screen.dart';
 import 'package:shop_mate/screens/inventory/inventory_screen.dart';
+import 'package:shop_mate/screens/products/products_screen.dart';
 import 'package:shop_mate/screens/profile/profile_screen.dart';
 import 'package:shop_mate/screens/sales_screen.dart';
 import 'package:shop_mate/screens/settings_screen.dart';
 import 'package:shop_mate/screens/zakat_screen.dart';
+import 'package:shop_mate/widgets/layout/responsive_product_grid.dart';
 import '../core/utils/constants_enums.dart';
 import '../screens/home/navigation_item_model.dart';
 
 class NavigationProvider extends ChangeNotifier {
   int _selectedIndex = 0;
-  bool _isSidebarExpanded = true;
+  bool _isSidebarExpanded = false;
 
   int get selectedIndex => _selectedIndex;
   bool get isSidebarExpanded => _isSidebarExpanded;
 
-  /// List of navigation items. 
+  /// List of navigation items.
   /// Note: Using `const` for the screens is ideal if they are immutable.
   final List<NavigationItem> _navigationItems = const [
     NavigationItem(
@@ -34,6 +36,13 @@ class NavigationProvider extends ChangeNotifier {
       icon: Bootstrap.box_seam,
       allowedRoles: [UserRole.admin, UserRole.manager],
       screen: InventoryScreen(),
+    ),
+    NavigationItem(
+      id: 'products',
+      label: 'Products',
+      icon: LucideIcons.package2,
+      allowedRoles: [UserRole.admin, UserRole.manager],
+      screen: ProductsScreen(),
     ),
     NavigationItem(
       id: 'sales',
