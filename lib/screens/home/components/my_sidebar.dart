@@ -15,7 +15,7 @@ import 'package:shop_mate/services/auth_services.dart';
 import '../../../core/utils/constants.dart';
 import '../../../core/utils/constants_enums.dart';
 
-class ResponsiveNavigation extends StatelessWidget {
+class ResponsiveNavigation extends StatefulWidget {
   const ResponsiveNavigation({
     super.key,
     required this.userRole,
@@ -24,11 +24,16 @@ class ResponsiveNavigation extends StatelessWidget {
   final UserRole userRole;
 
   @override
+  State<ResponsiveNavigation> createState() => _ResponsiveNavigationState();
+}
+
+class _ResponsiveNavigationState extends State<ResponsiveNavigation> {
+  @override
   Widget build(BuildContext context) {
     final theme = ShadTheme.of(context);
     final sidebarProv = Provider.of<NavigationProvider>(context);
     final authService = MyAuthService();
-    final availableItems = sidebarProv.getAvailableItems(userRole);
+    final availableItems = sidebarProv.getAvailableItems(widget.userRole);
     bool isExtended = sidebarProv.isSidebarExpanded;
 
     Widget _buildHeader(BuildContext context) {

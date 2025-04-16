@@ -13,7 +13,8 @@ import 'package:shop_mate/data/models/products/product_model.dart';
 import 'package:shop_mate/providers/inventory_provider.dart';
 import 'package:shop_mate/screens/inventory/register_product_screen.dart';
 import 'package:shop_mate/screens/inventory/view_product_screen.dart'; // You'll need to create this
-import 'package:shop_mate/screens/inventory/edit_product_screen.dart'; // You'll need to create this
+import 'package:shop_mate/screens/inventory/edit_product_screen.dart';
+import 'package:shop_mate/screens/inventory/widgets/inventory_item_card.dart'; // You'll need to create this
 
 class InventoryScreen extends StatefulWidget {
   const InventoryScreen({super.key});
@@ -573,15 +574,15 @@ class _InventoryScreenState extends State<InventoryScreen>
       case 0: // Grid View
         return SliverGrid(
           delegate: SliverChildBuilderDelegate(
-            (context, index) => ProductCard(item: items[index]),
+            (context, index) => InventoryItemCard(item: items[index]),
             childCount: items.length,
           ),
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: _getCrossAxisCount(context),
-            crossAxisSpacing: 16.w,
-            mainAxisSpacing: 16.h,
+            crossAxisSpacing: 8.w,
+            mainAxisSpacing: 14.h,
             childAspectRatio: screenWidth > 600
-                ? 0.8
+                ? 0.6
                 : 0.75, // Adjust aspect ratio for different screens
           ),
         );
@@ -677,9 +678,9 @@ class ResponsiveTableRow extends StatelessWidget {
   final InventoryItem item;
 
   const ResponsiveTableRow({
-    Key? key,
+    super.key,
     required this.item,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -966,187 +967,6 @@ class ResponsiveTableRow extends StatelessWidget {
 //   }
 // }
 
-class ProductCard extends StatefulWidget {
-  final InventoryItem item;
-
-  const ProductCard({
-    super.key,
-    required this.item,
-  });
-
-  @override
-  State<ProductCard> createState() => _ProductCardState();
-}
-
-class _ProductCardState extends State<ProductCard> {
-  final popoverController = ShadPopoverController();
-
-  @override
-  void dispose() {
-    popoverController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = ShadTheme.of(context);
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isSmallScreen = screenWidth < 600;
-
-    return ShadCard(
-      width: double.infinity,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Image/Icon Section
-          Stack(
-            children: [
-              Container(
-                height: isSmallScreen ? 120 : 150,
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.muted.withOpacity(0.2),
-                  borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(6),
-                  ),
-                ),
-                child: Center(
-                  child: Icon(
-                    LucideIcons.package,
-                    size: isSmallScreen ? 24 : 32,
-                    color: theme.colorScheme.mutedForeground,
-                  ),
-                ),
-              ),
-              // Status Badge
-              Positioned(
-                top: 8,
-                left: 8,
-                child: ShadBadge(
-                  child: Text(widget.item.status.name),
-                  backgroundColor:
-                      widget.item.status == InventoryStatus.outOfStock
-                          ? theme.colorScheme.destructive
-                          : widget.item.status == InventoryStatus.lowStock
-                              ? Colors.yellow
-                              : Colors.green,
-                ),
-                // child: StatusBadge(status: widget.item.status),
-              ),
-              // Options Menu
-              Positioned(
-                top: 8,
-                right: 8,
-                child: ShadPopover(
-                  controller: popoverController,
-                  popover: (context) => SizedBox(
-                    width: 200,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        ShadContextMenuItem(
-                          child: const Text('View Details'),
-                          leading: Icon(LucideIcons.eye, size: 16),
-                          // label: const Text('View Details'),
-                          onPressed: () {
-                            popoverController.toggle();
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    ViewProductScreen(item: widget.item),
-                              ),
-                            );
-                          },
-                        ),
-                        ShadContextMenuItem(
-                          leading: Icon(LucideIcons.penLine, size: 16),
-                          child: const Text('Edit Product'),
-                          onPressed: () {
-                            popoverController.toggle();
-                            // Handle edit action
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                  child: ShadButton.ghost(
-                    // variant: ShadButtonVariant.ghost,
-                    size: ShadButtonSize.sm,
-                    padding: EdgeInsets.zero,
-                    child: Icon(
-                      LucideIcons.ellipsisVertical,
-                      size: 16,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          // Product Info Section
-          Padding(
-            padding: const EdgeInsets.all(12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Product Name
-                ShadTooltip(
-                  // text: widget.item.name,
-                  builder: (context) {
-                    return Text(
-                      widget.item.name,
-                      style: theme.textTheme.small.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    );
-                  },
-                  child: Text(
-                    widget.item.name,
-                    style: theme.textTheme.small.copyWith(
-                      fontWeight: FontWeight.bold,
-                      // maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 4),
-                // Price
-                Text(
-                  formatPrice(price: widget.item.salesPrice),
-                  style: theme.textTheme.large.copyWith(
-                    color: theme.colorScheme.primary,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                // Stock Info
-                ShadBadge.secondary(
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        LucideIcons.package,
-                        size: 14,
-                        color: theme.colorScheme.mutedForeground,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        '${widget.item.quantity} in stock',
-                        style: theme.textTheme.small.copyWith(
-                          color: theme.colorScheme.mutedForeground,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
 
 class ProductListTile extends StatelessWidget {
   final InventoryItem item;
@@ -1316,17 +1136,21 @@ class StatusBadge extends StatelessWidget {
         textColor = theme.colorScheme.muted;
     }
 
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        borderRadius: BorderRadius.circular(4),
-      ),
-      child: Text(
-        status.name,
-        style: theme.textTheme.small.copyWith(
-          color: textColor,
-          fontWeight: FontWeight.bold,
+    return ConstrainedBox(
+      constraints: BoxConstraints(maxWidth: 15.w),
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 5.w, vertical: 3.h),
+        decoration: BoxDecoration(
+          color: backgroundColor,
+          borderRadius: BorderRadius.circular(4),
+        ),
+        child: Text(
+          status.name,
+          style: theme.textTheme.small.copyWith(
+            color: textColor,
+            fontWeight: FontWeight.bold,
+            fontSize: 3.5.w,
+          ),
         ),
       ),
     );
