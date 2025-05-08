@@ -3,7 +3,6 @@ import 'package:shop_mate/data/models/base_model.dart';
 import 'package:shop_mate/data/models/businesses/business_settings.dart';
 import 'package:shop_mate/data/models/businesses/subscription_model.dart';
 import 'package:shop_mate/core/utils/constants_enums.dart';
-import 'package:shop_mate/data/models/users/employee_model.dart';
 part 'business_model.g.dart';
 
 @JsonSerializable(explicitToJson: true)
@@ -14,9 +13,9 @@ class Business extends BaseModel {
   final String ownerId;
   final BusinessCategories businessType;
   final String? token;
-  List<Employee> employees;
   Subscription subscription;
   String? businessAbbrev;
+  List<String>? locations;
   BusinessSettings? businessSettings;
 
   Business({
@@ -28,13 +27,15 @@ class Business extends BaseModel {
     required this.businessType,
     required this.ownerId,
     this.token,
-    this.employees = const [],
     Subscription? subscription,
     this.businessAbbrev,
+    this.locations,
     BusinessSettings? businessSettings,
   })  : subscription = subscription ?? Subscription.defaultSubscription(),
         businessSettings =
-            businessSettings ?? BusinessSettings.defaultSettings(ownerId);
+            businessSettings ?? BusinessSettings.defaultSettings(ownerId) {
+              locations ??= ["Store", "Warehouse"];
+            }
 
   factory Business.fromJson(Map<String, dynamic> json) =>
       _$BusinessFromJson(json);
@@ -93,9 +94,9 @@ class Business extends BaseModel {
     BusinessCategories? businessType,
     String? ownerId,
     String? token,
-    List<Employee>? employees,
     Subscription? subscription,
     String? bizIdentifier,
+    List<String>? locations,
     BusinessSettings? businessSettings,
     DateTime? createdAt,
     DateTime? updatedAt,
@@ -109,10 +110,10 @@ class Business extends BaseModel {
       businessType: businessType ?? this.businessType,
       ownerId: ownerId ?? this.ownerId,
       token: token ?? this.token,
-      employees: employees ?? this.employees,
       subscription: subscription ?? this.subscription,
       businessAbbrev: bizIdentifier ?? this.businessAbbrev,
       businessSettings: businessSettings ?? this.businessSettings,
+      locations: locations!.isNotEmpty ? locations : this.locations,
     );
   }
 

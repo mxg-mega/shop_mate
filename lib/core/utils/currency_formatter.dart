@@ -34,11 +34,6 @@ String formatPrice({String? currency = '₦', required double price}) {
     }
   }
   formattedPrice = '$formattedPrice.${splitPrice[1]}';
-  // after every 3 digits shift digit forward and add a ','
-  // final formattedPrice =
-  //     splitPrice[0] + ',' + splitPrice[1].substring(0, length - (length % 3));
-  // add the currency symbol and return
-  debugPrint('$currency$formattedPrice');
   return '$currency$formattedPrice';
 }
 

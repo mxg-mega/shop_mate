@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
+import 'package:shop_mate/core/utils/constants.dart';
 import 'package:shop_mate/data/datasource/local/business_storage.dart';
 import 'package:shop_mate/data/datasource/repositories/inventory_repository.dart';
 import 'package:shop_mate/data/models/inventory/inventory_item_model.dart';
@@ -9,13 +11,19 @@ import 'package:shop_mate/data/models/products/product_unit.dart';
 import 'package:shop_mate/features/responsive_design/layouts/responsive_layout.dart';
 import 'package:shop_mate/providers/authentication_provider.dart';
 import 'package:shop_mate/providers/inventory_provider.dart';
-import 'package:shop_mate/screens/inventory/product_unit_manager.dart';
+import 'package:shop_mate/providers/product_provider.dart';
+import 'package:shop_mate/screens/inventory/inventory_item_registration_screen.dart';
+import 'package:shop_mate/screens/inventory/widgets/location_selector_widget.dart';
+import 'package:shop_mate/screens/products/product_unit_manager.dart';
+import 'package:shop_mate/services/business_service.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../core/utils/constants_enums.dart';
 
 class RegisterProductScreen extends StatefulWidget {
-  const RegisterProductScreen({super.key});
+  const RegisterProductScreen({super.key, this.sku});
+
+  final String? sku; // Nullable SKU parameter
 
   @override
   State<RegisterProductScreen> createState() => _RegisterProductScreenState();
@@ -28,9 +36,11 @@ class _RegisterProductScreenState extends State<RegisterProductScreen> {
   final TextEditingController _quantityController = TextEditingController();
   final TextEditingController _costPriceController = TextEditingController();
   final TextEditingController _salesPriceController = TextEditingController();
-  final TextEditingController _locationController = TextEditingController();
   final TextEditingController _skuController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
+  final TextEditingController _locationController = TextEditingController();
+  // final bool hasExpiryDate;
+  // final DateTime expiryDate;
   bool hasExpiryDate = true;
 
   ProductCategory? _selectedCategory;
@@ -38,39 +48,15 @@ class _RegisterProductScreenState extends State<RegisterProductScreen> {
       Product.defaultProductUnits.map((unit) => unit.copyWith()).toList();
   DateTime? expiryDate;
 
+  Product? _registeredProduct = null;
+
   @override
   void initState() {
     super.initState();
-    context
-        .read<AuthenticationProvider>()
-        .currentBusiness!
-        .businessSettings!
-        .defaultUnitSystem
-        .toString();
   }
 
-  List<Widget> _rowOfCategoryAndExpiry(bool isRow) {
+  List<Widget> _buildExpiryDateWidget(bool isRow) {
     return [
-      ShadSelectFormField<ProductCategory>(
-        label: const Text('Product Category *'),
-        shrinkWrap: true,
-        anchor: ShadAnchor(childAlignment: Alignment.bottomLeft),
-        onChanged: (category) {
-          setState(() {
-            _selectedCategory = category;
-          });
-        },
-        initialValue: ProductCategory.none,
-        itemCount: ProductCategory.values.length,
-        options: ProductCategory.values
-            .map((category) =>
-                ShadOption(value: category, child: Text(category.name)))
-            .toList(),
-        selectedOptionBuilder: (context, category) =>
-            category == ProductCategory.none
-                ? const Text('Please Select a Product Category')
-                : Text(category.name),
-      ),
       isRow ? Perimeter(width: 3) : Perimeter(height: 2),
       Column(
         mainAxisSize: MainAxisSize.min,
@@ -108,11 +94,40 @@ class _RegisterProductScreenState extends State<RegisterProductScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final provider = Provider.of<InventoryProvider>(context);
+    final provider = Provider.of<ProductProvider>(context);
     final authProv = Provider.of<AuthenticationProvider>(context);
+    final theme = ShadTheme.of(context);
+    final inventoryProvider = Provider.of<InventoryProvider>(context);
+
     return Scaffold(
       appBar: AppBar(
+        leading: ShadButton.ghost(
+          child: Icon(LucideIcons.arrowLeft),
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+        ),
         title: const Text('Register Product'),
+        actions: [
+          ShadButton.secondary(
+            child: Text('Add Inventory'),
+            onPressed: () {
+              // takes user to the inventory item registrayion page
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => InventoryItemRegistrationScreen(
+                    // TODO: Pass the product ID to the InventoryItemRegistrationScreen
+                    // most likely it should be after a registration of a product has been made,
+                    // then pass it here so we will use the product ID to create the inventory item
+                    // use the provider to see if the product is already registered after submission
+                    productId: _registeredProduct!.id,
+                  ),
+                ),
+              );
+            },
+          )
+        ],
+        actionsPadding: EdgeInsets.only(left: 5.w),
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -120,7 +135,15 @@ class _RegisterProductScreenState extends State<RegisterProductScreen> {
           child: ShadForm(
             key: _formKey,
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Text(
+                  'Basic Information',
+                  style: theme.textTheme.h3,
+                ),
+                const Perimeter(
+                  height: 2,
+                ),
                 ShadInputFormField(
                   controller: _nameController,
                   label: const Text('Product Name *'),
@@ -133,6 +156,36 @@ class _RegisterProductScreenState extends State<RegisterProductScreen> {
                     return null;
                   },
                 ),
+                Perimeter(height: 2),
+                ShadSelectFormField<ProductCategory>(
+                  label: const Text('Product Category *'),
+                  shrinkWrap: true,
+                  anchor: ShadAnchor(childAlignment: Alignment.bottomLeft),
+                  onChanged: (category) {
+                    setState(() {
+                      _selectedCategory = category;
+                    });
+                  },
+                  initialValue: ProductCategory.none,
+                  itemCount: ProductCategory.values.length,
+                  options: ProductCategory.values
+                      .map((category) => ShadOption(
+                          value: category, child: Text(category.name)))
+                      .toList(),
+                  selectedOptionBuilder: (context, category) =>
+                      category == ProductCategory.none
+                          ? const Text('Please Select a Product Category')
+                          : Text(category.name),
+                ),
+                Perimeter(height: 2),
+                ShadInputFormField(
+                  maxLines: 5,
+                  controller: _descriptionController,
+                  label: Text('Description'),
+                  placeholder: Text('Product Description...'),
+                ),
+                Perimeter(height: 5),
+                Text('Pricing', style: theme.textTheme.h3),
                 Perimeter(height: 2),
                 Row(
                   children: [
@@ -199,6 +252,36 @@ class _RegisterProductScreenState extends State<RegisterProductScreen> {
                     Expanded(
                       child: ShadInputFormField(
                         controller: _quantityController,
+                        placeholder: Text('Quantity'),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            ShadButton.outline(
+                              icon: Icon(Icons.remove),
+                              onPressed: () {
+                                final currentValue =
+                                    int.tryParse(_quantityController.text) ?? 0;
+                                if (currentValue > 0) {
+                                  setState(() {
+                                    _quantityController.text =
+                                        (currentValue - 1).toString();
+                                  });
+                                }
+                              },
+                            ),
+                            ShadButton.outline(
+                              icon: Icon(Icons.add),
+                              onPressed: () {
+                                final currentValue =
+                                    int.tryParse(_quantityController.text) ?? 0;
+                                setState(() {
+                                  _quantityController.text =
+                                      (currentValue + 1).toString();
+                                });
+                              },
+                            ),
+                          ],
+                        ),
                         label: const Text('Quantity *'),
                         enableInteractiveSelection: true,
                         decoration: const ShadDecoration(),
@@ -212,25 +295,59 @@ class _RegisterProductScreenState extends State<RegisterProductScreen> {
                       ),
                     ),
                     Perimeter(width: 2),
-                    Expanded(
-                      child: ShadInputFormField(
-                        controller: _locationController,
-                        label: const Text('Location'),
-                        placeholder: const Text('e.g Store, Warehouse etc.'),
-                      ),
-                    ),
                   ],
                 ),
                 Perimeter(height: 2),
-                /* Disable the SKU field
-                * TODO: this will be a widget that to a scanner to scan the barcode
-                * when scanned, the barcode will be stored,
-                * and the barcode will be displayed in the text field
-                * and the barcode will be disabled
-                * in the future we can make a look up table to check if the barcode is valid
-                * and what information we can fetch using that code from public databases.
-                * this feature can even serve as a shortcut for product registration.
-                * making it easier for users to register products by just scanning the barcode.
+                // New SKU/Barcode widget implementation (commented out for now)
+                /*
+                ShadInputFormField(
+                  controller: _skuController,
+                  label: const Text('SKU/Barcode'),
+                  placeholder: const Text('Scan or Enter SKU/Barcode'),
+                  trailing: IconButton(
+                  icon: const Icon(Icons.camera_alt),
+                  onPressed: () async {
+                  try {
+                  // Simulate barcode scanning functionality
+                  final scannedBarcode = await scanBarcode();
+                  if (scannedBarcode != null) {
+                    setState(() {
+                    _skuController.text = scannedBarcode;
+                    });
+                  }
+                  } catch (e) {
+                  // If scanning fails, prompt user to enter manually
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                    content: Text(
+                    'Failed to scan barcode. Please enter manually.'),
+                    ),
+                  );
+                  }
+                  },
+                  ),
+                  validator: (value) {
+                  if (value == null || value.isEmpty) {
+                  return 'Please enter or scan a valid SKU/Barcode';
+                  }
+                  return null;
+                  },
+                );
+
+                // Template for barcode lookup functionality
+                Future<Map<String, dynamic>?> lookupBarcode(String barcode) async {
+                  // TODO: Implement barcode lookup logic here
+                  // Example: Query a public database or API to fetch product details
+                  // Return a map of product details or null if not found
+                  return null;
+                }
+
+                // Simulated barcode scanning function
+                Future<String?> scanBarcode() async {
+                  // TODO: Integrate with a barcode scanning library
+                  // Example: Use a package like `mobile_scanner` or `barcode_scan2`
+                  return null; // Replace with actual scanned barcode
+                }
                 */
                 ShadInputFormField(
                   controller: _skuController,
@@ -238,13 +355,7 @@ class _RegisterProductScreenState extends State<RegisterProductScreen> {
                   placeholder: Text('This is Temporarily Disabled'),
                   enabled: false,
                 ),
-                Perimeter(height: 2),
-                ShadInputFormField(
-                  controller: _descriptionController,
-                  label: Text('Description'),
-                  placeholder: Text('Product Description...'),
-                ),
-                Perimeter(height: 2),
+                Perimeter(height: 5),
                 ProductUnitManager(
                     costPrice:
                         double.tryParse(_costPriceController.text) ?? 0.0,
@@ -256,17 +367,54 @@ class _RegisterProductScreenState extends State<RegisterProductScreen> {
                         productUnits = units;
                       });
                     }),
+                Perimeter(height: 5),
+                Text(
+                  'Additional Information',
+                  style: theme.textTheme.h3,
+                ),
                 Perimeter(height: 2),
+                Text(
+                  'Select Expiry Date',
+                  style: theme.textTheme.h4,
+                ),
                 if (ResponsiveLayout.isMobile(context))
                   Column(
-                    children: _rowOfCategoryAndExpiry(false),
+                    children: _buildExpiryDateWidget(false),
                   )
                 else
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: _rowOfCategoryAndExpiry(true),
+                    children: _buildExpiryDateWidget(true),
                   ),
+                Perimeter(height: 2),
+                Text(
+                  'Select location',
+                  style: theme.textTheme.h4,
+                ),
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: BusinessService.instance.currentBusiness!.locations!
+                      .map(
+                        (location) => ListTile(
+                          leading: ShadCheckbox(
+                            value: location == _locationController.text,
+                            onChanged: (value) {
+                              setState(() {
+                                _locationController.text = location;
+                              });
+                            },
+                          ),
+                          title: Text(
+                            location,
+                            style: theme.textTheme.p.copyWith(
+                              fontSize: theme.textTheme.small.fontSize,
+                            ),
+                          ),
+                        ),
+                      )
+                      .toList(),
+                ),
                 Perimeter(height: 5),
                 ShadButton(
                   onPressed: provider.isLoading
@@ -298,53 +446,74 @@ class _RegisterProductScreenState extends State<RegisterProductScreen> {
                               // return;
                             }
 
-                            final quantity =
-                                int.parse(_quantityController.text);
-
-                            final status =
-                                InventoryItem.calculateStatus(quantity);
-
                             final newProduct = Product(
                               baseUnit: productUnits
                                   .firstWhere((unit) => unit.isBaseUnit)
                                   .unit
                                   .name,
                               businessId: authProv.currentBusiness!.id,
-                                  // BusinessStorage.getBusinessProfile()!.id,
+                              // BusinessStorage.getBusinessProfile()!.id,
                               name: _nameController.text,
                               id: const Uuid().v4(),
                               costPrice:
                                   double.parse(_costPriceController.text),
                               salesPrice:
                                   double.parse(_salesPriceController.text),
-                              stockQuantity:
-                                  double.parse(_quantityController.text),
+                              stockQuantity: double.parse(
+                                  _quantityController.text.isEmpty
+                                      ? '0'
+                                      : _quantityController.text),
                               category:
                                   _selectedCategory ?? ProductCategory.others,
-                              sku: Product.generateSKU(_nameController.text),
+                              sku: widget.sku ??
+                                  Product.generateSKU(_nameController.text),
                               isActive: true,
                               productUnits: productUnits,
                               expiryDate: expiryDate,
                               description: _descriptionController.text,
                               imageUrl: '',
+                              createdAt: DateTime.now(),
+                              updatedAt: DateTime.now(),
                             );
-                            print(newProduct.toJson());
+                            logger.d('New Product : ${newProduct.toJson()}');
+                            WidgetsBinding.instance.addPostFrameCallback((_) {
+                              setState(() {
+                                _registeredProduct = newProduct;
+                                logger.d(
+                                    'Registered Product : ${_registeredProduct?.toJson()}');
+                              });
+                            });
                             final newItem2 = newProduct.createInventoryItem(
-                                location: _locationController.text,
-                                initialStock:
-                                    double.parse(_quantityController.text),
-                                inventoryItemId: InventoryRepository()
-                                    .getCollection()
-                                    .doc()
-                                    .id);
+                              location: _locationController.text.isEmpty
+                                  ? 'Store'
+                                  : _locationController.text,
+                              initialStock: double.parse(
+                                  _quantityController.text.isEmpty
+                                      ? '0'
+                                      : _quantityController.text),
+                              inventoryItemId: InventoryRepository()
+                                  .getCollection()
+                                  .doc()
+                                  .id,
+                              hasExpiryDate: hasExpiryDate,
+                              expiryDate: hasExpiryDate ? expiryDate : null,
+                            );
 
-                            // // Set the Product
-                            // newItem2.product = newProduct;
-
-                            await provider.saveProduct(newProduct);
-                            await provider.createInventoryItem(newItem2);
+                            logger.d(
+                                '=====================NEW ITEM++++++++++++++\n${newItem2.toJson()}');
+                            try {
+                              await provider.saveProduct(newProduct);
+                              await inventoryProvider
+                                  .createInventoryItem(newItem2);
+                            } catch (e) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                    content:
+                                        Text('Failed to register product')),
+                              );
+                            }
                             // provider.addInventory(newItem2);
-                            Navigator.pop(context);
+                            Navigator.of(context).pop();
                           } else {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
@@ -355,7 +524,9 @@ class _RegisterProductScreenState extends State<RegisterProductScreen> {
                           }
                         },
                   child: provider.isLoading
-                      ? const CircularProgressIndicator()
+                      ? CircularProgressIndicator(
+                          color: theme.colorScheme.secondary,
+                        )
                       : const Text('Register Product'),
                 ),
                 // Consumer<InventoryProvider>(
@@ -455,3 +626,62 @@ class _RegisterProductScreenState extends State<RegisterProductScreen> {
     );
   }
 }
+
+
+// TODO: Look at this for future reference
+/**
+ * import 'package:flutter/material.dart';
+import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
+
+class ProductRegistrationScreen extends StatefulWidget {
+  @override
+  _ProductRegistrationScreenState createState() => _ProductRegistrationScreenState();
+}
+
+class _ProductRegistrationScreenState extends State<ProductRegistrationScreen> {
+  String? scannedBarcode;
+
+  Future<void> scanBarcode() async {
+    try {
+      String barcode = await FlutterBarcodeScanner.scanBarcode(
+        '#ff6666', // Scanner overlay color
+        'Cancel',  // Cancel button text
+        true,      // Show flash icon
+        ScanMode.BARCODE,
+      );
+      if (barcode != '-1') {
+        setState(() {
+          scannedBarcode = barcode;
+        });
+      }
+    } catch (e) {
+      // Handle errors
+      print('Error scanning barcode: $e');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Product Registration')),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            TextField(
+              controller: TextEditingController(text: scannedBarcode),
+              decoration: InputDecoration(labelText: 'SKU (Scanned Barcode)'),
+              enabled: false, // Disable the field
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: scanBarcode,
+              child: Text('Scan Barcode'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+ */

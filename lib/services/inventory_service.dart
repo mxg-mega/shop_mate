@@ -9,6 +9,7 @@ import 'package:shop_mate/data/models/inventory/inventory_model.dart';
 import 'package:shop_mate/data/models/unit_system/unit_sytem.dart';
 import 'package:shop_mate/services/business_service.dart';
 import 'package:shop_mate/services/firebase_CRUD_service.dart';
+import 'package:shop_mate/services/transaction_service.dart';
 
 class InventoryService {
   final InventoryRepository _repository;
@@ -64,7 +65,7 @@ class InventoryService {
       final newItem = fromItem.copyWith(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
         location: toLocation,
-        quantity: baseAmount.toInt(),
+        quantity: baseAmount,
       );
       batch.set(
         _repository.getDocumentReference(newItem.id),
@@ -88,7 +89,7 @@ class InventoryService {
     final updatedItem = item.copyWith(
       quantity: item.quantity + convertedAmount.toInt(),
       status: InventoryItem.calculateStatus(
-          item.quantity + convertedAmount.toInt()),
+          item.quantity + convertedAmount),
     );
     await _repository.updateInventoryItem(productId, updatedItem.toJson());
   }
@@ -108,7 +109,7 @@ class InventoryService {
     final updatedItem = item.copyWith(
       quantity: item.quantity - convertedAmount.toInt(),
       status: InventoryItem.calculateStatus(
-          item.quantity - convertedAmount.toInt()),
+          item.quantity - convertedAmount),
     );
     await _repository.updateInventoryItem(productId, updatedItem.toJson());
   }
@@ -165,6 +166,15 @@ class InventoryService {
 
   Future<void> createInventoryItem(InventoryItem item) async {
     await _repository.createInventoryItem(item);
+    // Create transaction for inventory item creation
+    final transactionService = TransactionService();
+    await transactionService.createTransactionForInventoryItemCreation(
+      inventoryItemId: item.id,
+      businessId: item.businessId ?? '',
+      productId: item.productId ?? '',
+      quantity: item.quantity,
+      notes: item.notes,
+    );
   }
 
   Future<InventoryItem?> getInventoryItemById(String id) async {

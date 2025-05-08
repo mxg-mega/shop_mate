@@ -16,14 +16,13 @@ Business _$BusinessFromJson(Map<String, dynamic> json) => Business(
           $enumDecode(_$BusinessCategoriesEnumMap, json['businessType']),
       ownerId: json['ownerId'] as String,
       token: json['token'] as String?,
-      employees: (json['employees'] as List<dynamic>?)
-              ?.map((e) => Employee.fromJson(e as Map<String, dynamic>))
-              .toList() ??
-          const [],
       subscription: json['subscription'] == null
           ? null
           : Subscription.fromJson(json['subscription'] as Map<String, dynamic>),
       businessAbbrev: json['businessAbbrev'] as String?,
+      locations: (json['locations'] as List<dynamic>?)
+          ?.map((e) => e as String)
+          .toList(),
       businessSettings: json['businessSettings'] == null
           ? null
           : BusinessSettings.fromJson(
@@ -47,9 +46,9 @@ Map<String, dynamic> _$BusinessToJson(Business instance) => <String, dynamic>{
       'ownerId': instance.ownerId,
       'businessType': _$BusinessCategoriesEnumMap[instance.businessType]!,
       'token': instance.token,
-      'employees': instance.employees.map((e) => e.toJson()).toList(),
       'subscription': instance.subscription.toJson(),
       'businessAbbrev': instance.businessAbbrev,
+      'locations': instance.locations,
       'businessSettings': instance.businessSettings?.toJson(),
     };
 

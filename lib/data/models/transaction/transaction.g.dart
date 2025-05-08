@@ -6,14 +6,14 @@ part of 'transaction.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-Transaction _$TransactionFromJson(Map<String, dynamic> json) => Transaction(
+Transactions _$TransactionsFromJson(Map<String, dynamic> json) => Transactions(
       id: json['id'] as String,
       name: json['name'] as String,
-      businessID: json['businessID'] as String?,
-      productID: json['productID'] as String?,
+      businessId: json['businessId'] as String?,
+      productId: json['productId'] as String?,
       type: json['type'] as String?,
-      transactionType:
-          $enumDecode(_$TransactionTypeEnumMap, json['transactionType']),
+      transactionsType:
+          $enumDecode(_$TransactionsTypeEnumMap, json['transactionsType']),
       quantity: json['quantity'] as String?,
       notes: json['notes'] as String?,
       createdAt: json['createdAt'] == null
@@ -24,22 +24,22 @@ Transaction _$TransactionFromJson(Map<String, dynamic> json) => Transaction(
           : DateTime.parse(json['updatedAt'] as String),
     );
 
-Map<String, dynamic> _$TransactionToJson(Transaction instance) =>
+Map<String, dynamic> _$TransactionsToJson(Transactions instance) =>
     <String, dynamic>{
       'name': instance.name,
       'id': instance.id,
       'createdAt': instance.createdAt?.toIso8601String(),
       'updatedAt': instance.updatedAt?.toIso8601String(),
       'type': instance.type,
-      'productID': instance.productID,
-      'businessID': instance.businessID,
-      'transactionType': _$TransactionTypeEnumMap[instance.transactionType]!,
+      'productId': instance.productId,
+      'businessId': instance.businessId,
+      'transactionsType': _$TransactionsTypeEnumMap[instance.transactionsType]!,
       'quantity': instance.quantity,
       'notes': instance.notes,
     };
 
-const _$TransactionTypeEnumMap = {
-  TransactionType.sale: 'sale',
-  TransactionType.transfer: 'transfer',
-  TransactionType.supply: 'supply',
+const _$TransactionsTypeEnumMap = {
+  TransactionsType.sale: 'sale',
+  TransactionsType.transfer: 'transfer',
+  TransactionsType.supply: 'supply',
 };

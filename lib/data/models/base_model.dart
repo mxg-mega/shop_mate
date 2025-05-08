@@ -2,7 +2,8 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 part 'base_model.g.dart';
 
 /// A base class representing common properties shared across models.
-@JsonSerializable(explicitToJson: true)
+@JsonSerializable(explicitToJson: true,
+    createToJson: true, createFactory: true)
 class BaseModel {
   String name;
   final String id;

@@ -8,12 +8,15 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 import 'package:shop_mate/core/themes/shadcn_themes.dart';
+import 'package:shop_mate/data/datasource/local/business_storage.dart';
 import 'package:shop_mate/data/datasource/local/user_storage.dart';
 import 'package:shop_mate/firebase_options.dart';
 import 'package:shop_mate/providers/authentication_provider.dart';
 import 'package:shop_mate/providers/inventory_provider.dart';
 import 'package:shop_mate/providers/navigation_provider.dart';
+import 'package:shop_mate/providers/product_provider.dart';
 import 'package:shop_mate/providers/theme_provider.dart';
+import 'package:shop_mate/providers/transaction_provider.dart';
 import 'package:shop_mate/screens/auth_screen.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
@@ -22,7 +25,6 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
-    // name: 'Shop Mate',
   );
 
   FirebaseFirestore.instance.settings = const Settings(
@@ -31,6 +33,7 @@ Future<void> main() async {
   );
 
   await UserStorage.initSharedPreferences();
+  await BusinessStorage.initSharedPreferences();
 
   if (!kIsWeb && Platform.isWindows) {
     try {
@@ -55,6 +58,12 @@ Future<void> main() async {
             create: (_) => NavigationProvider()),
         ChangeNotifierProvider<InventoryProvider>(
             create: (_) => InventoryProvider()),
+        ChangeNotifierProvider<ProductProvider>(
+          create: (_) => ProductProvider(),
+        ),
+        ChangeNotifierProvider<TransactionProvider>(
+          create: (_) => TransactionProvider(),
+        ),
       ],
       child: MyApp(),
     ),

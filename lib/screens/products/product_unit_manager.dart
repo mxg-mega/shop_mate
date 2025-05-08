@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
+import 'package:shop_mate/core/utils/constants_enums.dart';
 import 'package:shop_mate/data/datasource/local/business_storage.dart';
 import 'package:shop_mate/data/models/products/product_unit.dart';
 import 'package:shop_mate/data/models/unit_system/units_model.dart';
@@ -47,7 +48,8 @@ class _ProductUnitManagerState extends State<ProductUnitManager> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Product Units', style: ShadTheme.of(context).textTheme.h4),
+        Text('Product Units', style: ShadTheme.of(context).textTheme.h3),
+        Perimeter(height: 2),
         ListView.builder(
           shrinkWrap: true,
           itemCount: widget.units.length,

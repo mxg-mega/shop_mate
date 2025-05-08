@@ -4,7 +4,7 @@ import 'package:shadcn_ui/shadcn_ui.dart';
 import 'package:shop_mate/core/utils/currency_formatter.dart';
 import 'package:shop_mate/data/models/inventory/inventory_item_model.dart';
 import 'package:shop_mate/screens/inventory/inventory_screen.dart';
-import 'package:shop_mate/screens/inventory/view_product_screen.dart';
+import 'package:shop_mate/screens/inventory/view_inventory_item_screen.dart';
 
 class InventoryItemListTile extends StatelessWidget {
   final InventoryItem item;
@@ -22,7 +22,7 @@ class InventoryItemListTile extends StatelessWidget {
       onTap: () {
         Navigator.of(context).push(
           MaterialPageRoute(
-            builder: (context) => ViewProductScreen(item: item),
+            builder: (context) => ViewInventoryItemScreen(item: item),
           ),
         );
       },
@@ -111,7 +111,7 @@ class InventoryItemListTile extends StatelessWidget {
                           Navigator.of(context).push(
                             MaterialPageRoute(
                               builder: (context) =>
-                                  ViewProductScreen(item: item),
+                                  ViewInventoryItemScreen(item: item),
                             ),
                           );
                         },

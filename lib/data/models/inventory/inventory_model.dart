@@ -47,15 +47,23 @@ class Inventory {
   // Method to update inventory item quantity
   void updateQuantity(String productId, String location, double quantity) {
     try {
-      final item = items.firstWhere(
+      final itemIndex = items.indexWhere(
         (item) => item.productId == productId && item.location == location,
       );
-      item.quantity = quantity;
-      item.lastUpdated = DateTime.now();
-      item.status = _calculateStatus(quantity.toInt());
+      if (itemIndex == -1) {
+        throw Exception(
+            'The inventory item you are trying to update does not exist');
+      }
+      final item = items[itemIndex];
+      final updatedItem = item.copyWith(
+        quantity: quantity,
+        updatedAt: DateTime.now(),
+        status: _calculateStatus(quantity),
+      );
+      items[itemIndex] = updatedItem;
     } catch (e) {
       throw Exception(
-          'The inventory item you are trying to update does not exists');
+          'The inventory item you are trying to update does not exist');
     }
   }
 
@@ -72,7 +80,7 @@ class Inventory {
   }
 
   // Method to calculate the inventory status based on quantity
-  static InventoryStatus _calculateStatus(int quantity) {
+  static InventoryStatus _calculateStatus(double quantity) {
     if (quantity <= 0) {
       return InventoryStatus.outOfStock;
     } else if (quantity < 10) {

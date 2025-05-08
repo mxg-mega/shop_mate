@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
 import 'package:shop_mate/core/error/product_exceptions.dart';
 import 'package:shop_mate/core/utils/constants.dart';
 import 'package:shop_mate/data/models/products/product_model.dart';
@@ -23,9 +24,19 @@ class ProductRepository {
     }
   }
 
-
   CollectionReference getCollection() {
     return _crudService.collection;
+  }
+
+  Future<List<Product>> getAllProducts() async {
+    try {
+      // TODO: you can change this later to get all product
+      // or implement the pagination in UI
+      final response = _crudService.getPaginated(limit: 100);
+      return response;
+    } catch (e) {
+      rethrow;
+    }
   }
 
   Future<void> createProduct(Product product) async {
@@ -57,23 +68,38 @@ class ProductRepository {
     }
   }
 
+  Future<Product?> fetchProductByName(String name) async {
+    try {
+      final querySnapshot = await _crudService.collection
+          .where('name', isEqualTo: name)
+          .limit(1)
+          .get();
+      if (querySnapshot.docs.isNotEmpty) {
+        return Product.fromJson(querySnapshot.docs.first.data());
+      }
+      return null;
+    } catch (e) {
+      logger.e('Error fetching Product by name: $e');
+      rethrow;
+    }
+  }
+
   Future<List<Product>> fetchProductsPaginated({
     int limit = 20,
     DocumentSnapshot? lastDocument,
   }) async {
     try {
-      Query query = _crudService.collection
-          .orderBy('name')
-          .limit(limit);
+      Query query = _crudService.collection.orderBy('name').limit(limit);
 
       if (lastDocument != null) {
         query = query.startAfterDocument(lastDocument);
       }
 
       final querySnapshot = await query.get();
-      return querySnapshot.docs
-          .map((doc) => Product.fromJson(doc.data() as Map<String, dynamic>))
-          .toList();
+      return querySnapshot.docs.map((doc) {
+        debugPrint('Product: ${doc.data()}');
+        return Product.fromJson(doc.data() as Map<String, dynamic>);
+      }).toList();
     } catch (e) {
       logger.e('Error fetching paginated products: $e');
       rethrow;
@@ -81,7 +107,6 @@ class ProductRepository {
   }
 
   Future<void> deleteProduct(String productId) async {
-
     try {
       await _crudService.delete(productId);
     } catch (e) {

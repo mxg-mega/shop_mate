@@ -1,5 +1,8 @@
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:shop_mate/data/models/unit_system/unit_sytem.dart';
+part 'business_settings.g.dart';
 
+@JsonSerializable(explicitToJson: true)
 class BusinessSettings {
   final String businessId;
   final String currency;
@@ -30,31 +33,36 @@ class BusinessSettings {
     );
   }
 
-  factory BusinessSettings.fromJson(Map<String, dynamic> json) {
-    return BusinessSettings(
-      businessId: json['businessId'] as String,
-      currency: json['currency'] as String,
-      timezone: json['timezone'] as String,
-      defaultUnitSystem: UnitSystem.fromJson(
-          json['defaultUnitSystem'] as Map<String, dynamic>),
-      additionalUnitSystems: (json['additionalUnitSystems'] as List<dynamic>)
-          .map((system) => UnitSystem.fromJson(system as Map<String, dynamic>))
-          .toList(),
-      unitSystem: UnitSystem.fromJson(json['unitSystem']),
-    );
-  }
+  factory BusinessSettings.fromJson(Map<String, dynamic> json) =>
+      _$BusinessSettingsFromJson(json);
 
-  Map<String, dynamic> toJson() {
-    return {
-      'businessId': businessId,
-      'currency': currency,
-      'timezone': timezone,
-      'defaultUnitSystem': defaultUnitSystem.toJson(),
-      'additionalUnitSystems':
-          additionalUnitSystems.map((system) => system.toJson()).toList(),
-      'unitSystem': unitSystem.toJson(),
-    };
-  }
+  Map<String, dynamic> toJson() => _$BusinessSettingsToJson(this);
+
+  // factory BusinessSettings.fromJson(Map<String, dynamic> json) {
+  //   return BusinessSettings(
+  //     businessId: json['businessId'] as String,
+  //     currency: json['currency'] as String,
+  //     timezone: json['timezone'] as String,
+  //     defaultUnitSystem: UnitSystem.fromJson(
+  //         json['defaultUnitSystem'] as Map<String, dynamic>),
+  //     additionalUnitSystems: (json['additionalUnitSystems'] as List<dynamic>)
+  //         .map((system) => UnitSystem.fromJson(system as Map<String, dynamic>))
+  //         .toList(),
+  //     unitSystem: UnitSystem.fromJson(json['unitSystem']),
+  //   );
+  // }
+
+  // Map<String, dynamic> toJson() {
+  //   return {
+  //     'businessId': businessId,
+  //     'currency': currency,
+  //     'timezone': timezone,
+  //     'defaultUnitSystem': defaultUnitSystem.toJson(),
+  //     'additionalUnitSystems':
+  //         additionalUnitSystems.map((system) => system.toJson()).toList(),
+  //     'unitSystem': unitSystem.toJson(),
+  //   };
+  // }
 
   BusinessSettings copyWith({
     String? businessId,
@@ -69,9 +77,9 @@ class BusinessSettings {
       currency: currency ?? this.currency,
       timezone: timezone ?? this.timezone,
       defaultUnitSystem: defaultUnitSystem ?? this.defaultUnitSystem,
-      additionalUnitSystems: additionalUnitSystems ?? this.additionalUnitSystems,
+      additionalUnitSystems:
+          additionalUnitSystems ?? this.additionalUnitSystems,
       unitSystem: unitSystem ?? this.unitSystem,
     );
   }
-
 }

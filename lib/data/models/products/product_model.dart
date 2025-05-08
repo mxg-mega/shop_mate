@@ -92,6 +92,8 @@ class Product extends BaseModel {
 
   InventoryItem createInventoryItem({
     String? location,
+    bool? hasExpiryDate,
+    DateTime? expiryDate,
     required double initialStock,
     required String inventoryItemId,
   }) {
@@ -101,14 +103,14 @@ class Product extends BaseModel {
       productId: id,
       businessId: businessId,
       name: name,
-      quantity: initialStock.toInt(),
-      status: Product.calculateStatus(initialStock.toInt()),
+      quantity: initialStock,
+      status: Product.calculateStatus(initialStock),
       costPrice: costPrice,
       salesPrice: salesPrice,
       location: location,
       baseUnit: baseUnitSymbol,
-      createdAt: createdAt,
-      updatedAt: updatedAt,
+      createdAt: createdAt!,
+      updatedAt: updatedAt!,
     );
   }
 
@@ -160,7 +162,7 @@ class Product extends BaseModel {
   }*/
 
   // Method to calculate the inventory status based on quantity
-  static InventoryStatus calculateStatus(int quantity) {
+  static InventoryStatus calculateStatus(double quantity) {
     if (quantity <= 0) {
       return InventoryStatus.outOfStock;
     } else if (quantity < 10) {
@@ -208,9 +210,6 @@ class Product extends BaseModel {
         'sku': sku,
         'status': status.name,
         'expiryDate': expiryDate?.toIso8601String(),
-        // 'createdAt': createdAt!.toIso8601String(),
-        // 'updatedAt': updatedAt!.toIso8601String(),
-        // 'inventoryItems': inventoryItems.map((i) => i.toJson()).toList(),
       });
   }
 
@@ -230,17 +229,11 @@ class Product extends BaseModel {
             .toList(),
         baseUnit: json['baseUnit'] as String,
         stockQuantity: (json['stockQuantity'] as num).toDouble(),
-        imageUrl: json['imageUrl'] as String?,
+        imageUrl: json['imageUrl'] as String? ?? '',
         isActive: json['isActive'] as bool? ?? true,
         sku: json['sku'] as String,
-        expiryDate: DateTime.tryParse(json['expiryDate']),
+        expiryDate: DateTime.tryParse(json['expiryDate'] as String? ?? ''),
         createdAt: DateTime.tryParse(json['createdAt']),
-        updatedAt: DateTime.tryParse(json['updatedAt']),
-        // inventoryItems: (json['inventoryItems'] as List<dynamic>)
-        //     .map(
-        // (itemJson) =>
-        //     InventoryItem.fromJson(itemJson as Map<String, dynamic>),
-        // )
-        // .toList(),
+        updatedAt: DateTime.tryParse(json['updatedAt'] ?? json['createdAt']),
       );
 }

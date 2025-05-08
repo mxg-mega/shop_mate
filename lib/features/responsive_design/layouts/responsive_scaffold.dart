@@ -5,6 +5,7 @@ import 'package:shop_mate/core/utils/constants_enums.dart';
 import 'package:shop_mate/features/responsive_design/layouts/responsive_layout.dart';
 import 'package:shop_mate/providers/navigation_provider.dart';
 import 'package:shop_mate/screens/home/components/my_sidebar.dart';
+import 'package:shop_mate/screens/home/components/bottom_nav_bar.dart';
 
 class ResponsiveScaffold extends StatelessWidget {
   final String? title;
@@ -38,10 +39,9 @@ class ResponsiveScaffold extends StatelessWidget {
         ),
         actions: actions,
       ),
-      drawer: Drawer(
-        child: ResponsiveNavigation(userRole: userRole),
-      ),
+      // Remove drawer, add bottom navigation bar
       body: body,
+      bottomNavigationBar: BottomNavBar(userRole: userRole),
     );
   }
 

@@ -1,19 +1,16 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
-import 'package:shop_mate/core/utils/constants_enums.dart';
 import 'package:shop_mate/core/utils/currency_formatter.dart';
 import 'package:shop_mate/core/utils/helpers.dart';
 import 'package:shop_mate/data/models/inventory/inventory_item_model.dart';
 import 'package:shop_mate/data/models/inventory/inventory_model.dart';
 import 'package:shop_mate/data/models/products/product_model.dart';
 import 'package:shop_mate/providers/inventory_provider.dart';
-import 'package:shop_mate/screens/inventory/register_product_screen.dart';
-import 'package:shop_mate/screens/inventory/view_product_screen.dart'; // You'll need to create this
-import 'package:shop_mate/screens/inventory/edit_product_screen.dart';
+import 'package:shop_mate/screens/inventory/inventory_item_registration_screen.dart';
+import 'package:shop_mate/screens/inventory/view_inventory_item_screen.dart';
+import 'package:shop_mate/screens/products/product_registeration_screen.dart';
 import 'package:shop_mate/screens/inventory/widgets/inventory_item_card.dart';
 import 'package:shop_mate/screens/inventory/widgets/inventory_item_list_tile.dart'; // You'll need to create this
 
@@ -256,7 +253,7 @@ class _InventoryScreenState extends State<InventoryScreen>
             // App Bar
             SliverAppBar(
               floating: true,
-              pinned: true,
+              // pinned: true,
               title: Text(
                 'Inventory',
                 style: theme.textTheme.h2.copyWith(
@@ -270,17 +267,17 @@ class _InventoryScreenState extends State<InventoryScreen>
                     // Navigate to inventory analytics
                   },
                 ),
-                IconButton(
+                ShadButton.ghost(
                   icon: Icon(LucideIcons.plus),
                   onPressed: () {
                     Navigator.of(context).push(MaterialPageRoute(
-                      builder: (context) => RegisterProductScreen(),
+                      builder: (context) => InventoryItemRegistrationScreen(),
                     ));
                   },
                 ),
               ],
               bottom: PreferredSize(
-                preferredSize: Size.fromHeight(isSmallScreen ? 150.h : 110.h),
+                preferredSize: Size.fromHeight(isSmallScreen ? 150.h : 120.h),
                 child: Column(
                   children: [
                     // Search Bar
@@ -375,7 +372,7 @@ class _InventoryScreenState extends State<InventoryScreen>
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.of(context).push(MaterialPageRoute(
-            builder: (context) => RegisterProductScreen(),
+            builder: (context) => InventoryItemRegistrationScreen(),
           ));
         },
         child: Icon(LucideIcons.plus),
@@ -517,13 +514,13 @@ class _InventoryScreenState extends State<InventoryScreen>
           Icon(
             LucideIcons.package,
             size: 64,
-            color: theme.colorScheme.muted,
+            color: theme.colorScheme.mutedForeground,
           ),
           SizedBox(height: 16.h),
           Text(
             'Your inventory is empty',
             style: theme.textTheme.p.copyWith(
-              color: theme.colorScheme.muted,
+              color: theme.colorScheme.mutedForeground,
             ),
           ),
           SizedBox(height: 16.h),
@@ -549,7 +546,7 @@ class _InventoryScreenState extends State<InventoryScreen>
           Icon(
             LucideIcons.search,
             size: 64,
-            color: theme.colorScheme.muted,
+            color: theme.colorScheme.mutedForeground,
           ),
           SizedBox(height: 16.h),
           Text(
@@ -560,7 +557,7 @@ class _InventoryScreenState extends State<InventoryScreen>
           Text(
             'Try adjusting your filters or search terms',
             style: theme.textTheme.small.copyWith(
-              color: theme.colorScheme.muted,
+              color: theme.colorScheme.mutedForeground,
             ),
           ),
         ],
@@ -659,7 +656,7 @@ class _InventoryScreenState extends State<InventoryScreen>
   void _viewProduct(BuildContext context, InventoryItem item) {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) => ViewProductScreen(item: item),
+        builder: (context) => ViewInventoryItemScreen(item: item),
       ),
     );
   }
@@ -730,7 +727,7 @@ class ResponsiveTableRow extends StatelessWidget {
                 onPressed: () {
                   Navigator.of(context).push(
                     MaterialPageRoute(
-                      builder: (context) => ViewProductScreen(item: item),
+                      builder: (context) => ViewInventoryItemScreen(item: item),
                     ),
                   );
                 },
@@ -748,7 +745,6 @@ class ResponsiveTableRow extends StatelessWidget {
     );
   }
 }
-
 
 class StatusBadge extends StatelessWidget {
   // final ProductStatus status;

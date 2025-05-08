@@ -4,7 +4,8 @@ import 'package:shadcn_ui/shadcn_ui.dart';
 import 'package:shop_mate/core/utils/currency_formatter.dart';
 import 'package:shop_mate/data/models/inventory/inventory_item_model.dart';
 import 'package:shop_mate/data/models/inventory/inventory_model.dart';
-import 'package:shop_mate/screens/inventory/view_product_screen.dart';
+import 'package:shop_mate/screens/inventory/view_inventory_item_screen.dart';
+import 'package:shop_mate/screens/products/view_product_screen.dart';
 
 class InventoryItemCard extends StatefulWidget {
   final InventoryItem item;
@@ -101,20 +102,19 @@ class _ProductCardState extends State<InventoryItemCard> {
                   child: ShadPopover(
                     controller: popoverController,
                     popover: (context) => SizedBox(
-                      width: 150.w,
+                      width: 90.w,
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           ListTile(
                             title: const Text('View Details'),
-                            leading: Icon(LucideIcons.eye, size: 16.w),
-                            // label: const Text('View Details'),
+                            leading: Icon(LucideIcons.eye),
                             onTap: () {
                               popoverController.toggle();
                               Navigator.of(context).push(
                                 MaterialPageRoute(
-                                  builder: (context) =>
-                                      ViewProductScreen(item: widget.item),
+                                  builder: (context) => ViewInventoryItemScreen(
+                                      item: widget.item),
                                 ),
                               );
                             },
@@ -150,7 +150,7 @@ class _ProductCardState extends State<InventoryItemCard> {
           Flexible(
             flex: 2,
             child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 15.w, vertical: 8.h),
+              padding: EdgeInsets.symmetric(horizontal: 3.w, vertical: 8.h),
               child: Column(
                 // mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -170,7 +170,6 @@ class _ProductCardState extends State<InventoryItemCard> {
                       widget.item.name,
                       style: theme.textTheme.small.copyWith(
                         fontWeight: FontWeight.bold,
-                        // maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
@@ -180,13 +179,16 @@ class _ProductCardState extends State<InventoryItemCard> {
                   Text(
                     formatPrice(price: widget.item.salesPrice),
                     style: theme.textTheme.large.copyWith(
-                        color: theme.colorScheme.primary,
-                        fontWeight: FontWeight.bold,
-                        overflow: TextOverflow.fade),
+                      color: theme.colorScheme.primary,
+                      fontWeight: FontWeight.bold,
+                      overflow: TextOverflow.fade,
+                    ),
+                    maxLines: 1,
                   ),
                   SizedBox(height: 6.h),
                   // Stock Info
                   ShadBadge.secondary(
+                    
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -200,7 +202,9 @@ class _ProductCardState extends State<InventoryItemCard> {
                           '${widget.item.quantity} in stock',
                           style: theme.textTheme.small.copyWith(
                             color: theme.colorScheme.mutedForeground,
+                            overflow: TextOverflow.ellipsis,
                           ),
+                          maxLines: 1,
                         ),
                       ],
                     ),

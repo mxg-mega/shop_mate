@@ -86,6 +86,24 @@ class FirebaseCRUDService<T extends BaseModel> {
     }
   }
 
+  Future<List<T>?> readListById(String id) async {
+    try {
+      final filteredItems = <T>[];
+      final filteredSnapshot =
+          await collection.where('id', isEqualTo: id).get().then((snapshot) {
+        for (int i = 0; i < snapshot.docs.length; i++) {
+          if (snapshot.docs[i].data()['id'] == id) {
+            filteredItems.add(fromJson(snapshot.docs[i].data()));
+          }
+        }
+        return filteredItems;
+      });
+      return filteredSnapshot;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   Future<void> update(String id,
       {Map<String, dynamic>? updates, T? model}) async {
     if (updates != null && model != null) {

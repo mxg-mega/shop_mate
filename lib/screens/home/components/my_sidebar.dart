@@ -97,12 +97,15 @@ class _ResponsiveNavigationState extends State<ResponsiveNavigation> {
               ),
               child: Row(
                 children: [
-                  Icon(
-                    item.icon,
-                    size: 24,
-                    color: isSelected
-                        ? theme.colorScheme.primary
-                        : theme.colorScheme.foreground,
+                  Tooltip(
+                    message: item.label,
+                    child: Icon(
+                      item.icon,
+                      size: 24,
+                      color: isSelected
+                          ? theme.colorScheme.primary
+                          : theme.colorScheme.foreground,
+                    ),
                   ),
                   TweenAnimationBuilder(
                     tween: Tween<double>(
@@ -133,28 +136,6 @@ class _ResponsiveNavigationState extends State<ResponsiveNavigation> {
                       );
                     },
                   ),
-/*                  // if (navProvider.isSidebarExpanded) ...[
-                  //   const SizedBox(width: 12),
-                  //   Flexible(
-                  //     flex: 5,
-                  //     child: AnimatedOpacity(
-                  //       duration: Duration(milliseconds: 400),
-                  //       opacity: navProvider.isSidebarExpanded ? 1.0 : 0.0,
-                  //       curve: Curves.easeInOut,
-                  //       child: Text(
-                  //         overflow: TextOverflow.ellipsis,
-                  //         softWrap: true,
-                  //         maxLines: 1,
-                  //         item.label.toUpperCase(),
-                  //         style: theme.textTheme.list.copyWith(
-                  //           color: isSelected
-                  //               ? theme.colorScheme.primary
-                  //               : theme.colorScheme.foreground,
-                  //         ),
-                  //       ),
-                  //     ),
-                  //   ),
-                  // ],*/
                 ],
               ),
             ),

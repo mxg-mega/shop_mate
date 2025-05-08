@@ -1,15 +1,29 @@
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:shop_mate/data/models/base_model.dart';
 import 'package:shop_mate/data/models/inventory/inventory_model.dart';
+part 'inventory_item_model.g.dart';
 
+// enum InventoryStatus {
+//   inStock,
+//   lowStock,
+//   outOfStock,
+// }
+/// InventoryItem represents a single item in the inventory.
+/// It includes details such as product ID, quantity, status, and pricing.
+/// It also includes methods for validation and status calculation.
+@JsonSerializable(explicitToJson: true)
 class InventoryItem extends BaseModel {
   final String productId;
   final String businessId;
-  final int quantity; // Quantity in the base unit
+  final double quantity; // Quantity in the base unit
   final InventoryStatus status;
   final String? location; // Optional: Location/Warehouse
   final double costPrice; // Cost price per base unit
   final double salesPrice; // Sales price per base unit
   final String baseUnit;
+  final bool hasExpiryDate;
+  final DateTime? expiryDate;
+  final String? notes;
 
   set quantity(value) => quantity = value;
   set lastUpdated(value) => lastUpdated = value;
@@ -24,6 +38,9 @@ class InventoryItem extends BaseModel {
     required this.costPrice,
     required this.salesPrice,
     this.location,
+    this.hasExpiryDate = false,
+    this.expiryDate,
+    this.notes,
     required this.baseUnit,
     required super.id,
     required super.name,
@@ -31,7 +48,7 @@ class InventoryItem extends BaseModel {
     required super.updatedAt,
   });
 
-  static InventoryStatus calculateStatus(int quantity) {
+  static InventoryStatus calculateStatus(double quantity) {
     if (quantity <= 0) {
       return InventoryStatus.outOfStock;
     } else if (quantity < 10) {
@@ -60,8 +77,11 @@ class InventoryItem extends BaseModel {
         costPrice: 0,
         salesPrice: 0,
         baseUnit: 'unit',
+        hasExpiryDate: false,
+        expiryDate: null,
       );
 
+  /*
   factory InventoryItem.fromJson(Map<String, dynamic> json) => InventoryItem(
         id: json['id'] ?? '',
         productId: json['productId'] ?? '',
@@ -91,15 +111,14 @@ class InventoryItem extends BaseModel {
       'costPrice': costPrice,
       'salesPrice': salesPrice,
       'businessId': businessId,
-      //      final String productId;
-      // final String businessId;
-      // final int quantity; // Quantity in the base unit
-      // final InventoryStatus status;
-      // final String? location; // Optional: Location/Warehouse
-      // final double costPrice; // Cost price per base unit
-      // final double salesPrice; // Sales price per base unit
-      // final String baseUnit;
     });
+  */
+
+  factory InventoryItem.fromJson(Map<String, dynamic> json) =>
+      _$InventoryItemFromJson(json);
+
+  @override
+  Map<String, dynamic> toJson() => _$InventoryItemToJson(this);
 
   @override
   InventoryItem copyWith({
@@ -109,12 +128,15 @@ class InventoryItem extends BaseModel {
     DateTime? updatedAt,
     String? productId,
     String? businessId,
-    int? quantity,
+    double? quantity,
     InventoryStatus? status,
     String? location,
     double? costPrice,
     double? salesPrice,
     String? baseUnit,
+    bool? hasExpiryDate,
+    DateTime? expiryDate,
+    String? notes,
   }) {
     return InventoryItem(
       productId: productId ?? this.productId,
@@ -125,10 +147,13 @@ class InventoryItem extends BaseModel {
       salesPrice: salesPrice ?? this.salesPrice,
       baseUnit: baseUnit ?? this.baseUnit,
       location: location,
-      id: id ?? super.id,
-      name: name ?? super.name,
-      createdAt: createdAt ?? super.createdAt,
-      updatedAt: updatedAt ?? super.updatedAt,
+      hasExpiryDate: hasExpiryDate ?? this.hasExpiryDate,
+      expiryDate: expiryDate ?? this.expiryDate,
+      notes: notes ?? this.notes,
+      id: super.id,
+      name: super.name,
+      createdAt: super.createdAt!,
+      updatedAt: super.updatedAt!,
     );
   }
 }

@@ -1,17 +1,12 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:shop_mate/core/error/error_toaster.dart';
-import 'package:shop_mate/core/utils/constants.dart';
-import 'package:shop_mate/data/datasource/local/business_storage.dart';
 import 'package:shop_mate/data/models/inventory/inventory_item_model.dart';
 import 'package:shop_mate/data/models/inventory/inventory_model.dart';
-import 'package:shop_mate/data/models/products/product_model.dart';
 import 'package:shop_mate/services/business_service.dart';
 import 'package:shop_mate/services/firebase_CRUD_service.dart';
 import 'package:shop_mate/services/inventory_service.dart';
-import 'package:shop_mate/services/product_services.dart';
 
 class InventoryProvider extends ChangeNotifier {
   bool isLoading = false;
@@ -19,7 +14,6 @@ class InventoryProvider extends ChangeNotifier {
   Inventory _inventory = Inventory(items: []);
   List<InventoryItem> get inventoryItems => _inventory.items;
   final services = InventoryService();
-  final productServices = ProductServices();
   StreamSubscription? _streamSub;
   StreamSubscription? get streamSub => _streamSub;
   Stream<List<InventoryItem>>? _inventoryStream;
@@ -98,7 +92,7 @@ class InventoryProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void updateItem(InventoryItem update) async {
+  Future<void> updateItem(InventoryItem update) async {
     isLoading = true;
     notifyListeners();
     try {
@@ -123,23 +117,6 @@ class InventoryProvider extends ChangeNotifier {
       await Future(() => services.createInventoryItem(item));
       ErrorNotificationService.showErrorToaster(
         message: 'Successfully registered Product',
-      );
-    } catch (e) {
-      ErrorNotificationService.showErrorToaster(
-          message: e.toString(), isDestructive: true);
-    } finally {
-      isLoading = false;
-      notifyListeners();
-    }
-  }
-
-  Future<void> saveProduct(Product product) async {
-    isLoading = true;
-    notifyListeners();
-    try {
-      await productServices.saveProduct(product);
-      ErrorNotificationService.showErrorToaster(
-        message: 'Successfully saved Product',
       );
     } catch (e) {
       ErrorNotificationService.showErrorToaster(
@@ -195,4 +172,11 @@ class InventoryProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
+
+double getLocationStock(String location) {
+    // Filter inventory items by location and sum their quantities
+    final itemsAtLocation = _inventory.items.where((item) => item.location == location);
+    final totalQuantity = itemsAtLocation.fold<double>(0, (sum, item) => sum + item.quantity);
+    return totalQuantity;
+}
 }

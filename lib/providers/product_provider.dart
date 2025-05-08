@@ -7,32 +7,38 @@ import 'package:shop_mate/services/product_services.dart';
 
 class ProductProvider extends ChangeNotifier {
   final ProductServices _productService = ProductServices();
-  
+
   List<Product> _allProducts = [];
   List<Product> _currentPageProducts = [];
+  bool _isLoading = false;
   bool _isLoadingMore = false;
   bool _hasMoreProducts = true;
   DocumentSnapshot? _lastDocument;
   int _currentPage = 1;
 
-  List<Product> get products => _searchQuery.isEmpty ? _currentPageProducts : _searchResults;
+  List<Product> get products =>
+      _searchQuery.isEmpty ? _currentPageProducts : _searchResults;
   bool get isLoadingMore => _isLoadingMore;
+  bool get isLoading => _isLoading;
   bool get hasMoreProducts => _hasMoreProducts;
   String get searchQuery => _searchQuery;
 
   List<Product> _searchResults = [];
   String _searchQuery = '';
 
-
   Future<void> searchProducts(String query) async {
     _searchQuery = query;
     if (query.isEmpty) {
       _searchResults = [];
     } else {
-      _searchResults = _allProducts.where((product) =>
-        product.name.toLowerCase().contains(query.toLowerCase()) ||
-        (product.description?.toLowerCase().contains(query.toLowerCase()) ?? false)
-      ).toList();
+      _searchResults = _allProducts
+          .where((product) =>
+              product.name.toLowerCase().contains(query.toLowerCase()) ||
+              (product.description
+                      ?.toLowerCase()
+                      .contains(query.toLowerCase()) ??
+                  false))
+          .toList();
     }
     notifyListeners();
   }
@@ -43,12 +49,13 @@ class ProductProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> fetchInitialProducts() async {
-
+  Future<void> fetchInitialProducts({int? limit}) async {
+    _isLoading = true;
+    notifyListeners();
     try {
       _resetPagination();
       final products = await _productService.fetchProductsPaginated(limit: 20);
-      
+
       if (products.isNotEmpty) {
         _allProducts = products;
         _currentPageProducts = products;
@@ -57,6 +64,9 @@ class ProductProvider extends ChangeNotifier {
     } catch (e) {
       ErrorNotificationService.showErrorToaster(message: e.toString());
       rethrow;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
     }
   }
 
@@ -98,22 +108,57 @@ class ProductProvider extends ChangeNotifier {
   }
 
   Future<Product> fetchProduct(String id) async {
+    _isLoading = true;
+    notifyListeners();
     try {
       if (id.isEmpty) {
-        throw ProductException('Failed to Fetch Product', code: 'Fetching-Failed');
+        throw ProductException('Failed to Fetch Product',
+            code: 'Fetching-Failed');
       }
       final product = await _productService.fetchProduct(id);
       if (product == null) {
-        throw ProductException('Error Occurred During fetching Product', code: 'Fetching-Failed');
+        throw ProductException('Error Occurred During fetching Product',
+            code: 'Fetching-Failed');
       }
       return product;
     } catch (e) {
       ErrorNotificationService.showErrorToaster(message: e.toString());
       rethrow;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> saveProduct(Product product) async {
+    _isLoading = true;
+    notifyListeners();
+    try {
+      final fetchedProduct =
+          await _productService.fetchProductByName(product.name);
+      if (fetchedProduct != null) {
+        throw ProductException('Product with this name already exists',
+            code: 'Product-Exists');
+      }
+      await _productService.saveProduct(product);
+      ErrorNotificationService.showErrorToaster(
+        message: 'Successfully saved Product',
+      );
+    } on ProductException catch (e) {
+      ErrorNotificationService.showErrorToaster(
+          message: e.toString(), isDestructive: true);
+    } catch (e) {
+      ErrorNotificationService.showErrorToaster(
+          message: e.toString(), isDestructive: true);
+    } finally {
+      _isLoading = false;
+      notifyListeners();
     }
   }
 
   Future<void> addProduct(Product product) async {
+    _isLoading = true;
+    notifyListeners();
     try {
       await _productService.saveProduct(product);
       _allProducts.insert(0, product);
@@ -121,6 +166,9 @@ class ProductProvider extends ChangeNotifier {
       notifyListeners();
     } catch (error) {
       ErrorNotificationService.showErrorToaster(message: error.toString());
+    } finally {
+      _isLoading = false;
+      notifyListeners();
     }
   }
 
