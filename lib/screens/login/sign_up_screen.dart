@@ -34,29 +34,41 @@ class _SignUpPageState extends State<SignUpPage> {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      child: ShadForm(
-        key: _formkey,
-        autovalidateMode: ShadAutovalidateMode.onUserInteraction,
-        child: Column(
-          children: [
-            UserInfoSection(
-              controller: widget.controller,
-              cardTitle: 'User Information',
-            ),
-            const Perimeter(height: 3),
-            BusinessInfoSection(
-              controller: widget.controller,
-              cardTitle: 'Business Information',
-            ),
-            const Perimeter(height: 3),
-            _buildSubmitButton(context),
-            const Perimeter(height: 3),
-            ShadButton.ghost(
+      padding: EdgeInsets.symmetric(horizontal: 8.0.w, vertical: 8.0.h),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          AppBar(
+            leading: ShadButton(
               onPressed: widget.onSwitch,
-              child: const Text('Already have an account?'),
+              child: Icon(LucideIcons.arrowLeft),
             ),
-          ],
-        ),
+          ),
+          ShadForm(
+            key: _formkey,
+            autovalidateMode: ShadAutovalidateMode.onUserInteraction,
+            child: Column(
+              children: [
+                UserInfoSection(
+                  controller: widget.controller,
+                  cardTitle: 'User Information',
+                ),
+                const Perimeter(height: 3),
+                BusinessInfoSection(
+                  controller: widget.controller,
+                  cardTitle: 'Business Information',
+                ),
+                const Perimeter(height: 3),
+                _buildSubmitButton(context),
+                const Perimeter(height: 3),
+                ShadButton.ghost(
+                  onPressed: widget.onSwitch,
+                  child: const Text('Already have an account?'),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

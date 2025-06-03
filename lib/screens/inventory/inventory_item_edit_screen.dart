@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'package:shop_mate/services/transaction_service.dart';
+
 import 'widgets/location_selector_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -7,7 +9,8 @@ import 'package:shadcn_ui/shadcn_ui.dart';
 import 'package:shop_mate/core/utils/constants.dart';
 import 'package:shop_mate/core/utils/constants_enums.dart';
 import 'package:shop_mate/core/utils/currency_formatter.dart';
-import 'package:shop_mate/data/models/inventory/inventory_item_model.dart' show InventoryItem;
+import 'package:shop_mate/data/models/inventory/inventory_item_model.dart'
+    show InventoryItem;
 import 'package:shop_mate/data/models/products/product_model.dart';
 import 'package:shop_mate/providers/inventory_provider.dart';
 import 'package:shop_mate/providers/product_provider.dart';
@@ -63,7 +66,7 @@ class _InventoryItemEditScreenState extends State<InventoryItemEditScreen> {
       Product? product = productProv.products
           .firstWhere((p) => p.id == widget.inventoryItem.productId,
               orElse: () => Product(
-                    id: '',
+                    id: '0000000',
                     name: '',
                     category: ProductCategory.none,
                     baseUnit: '',
@@ -75,10 +78,12 @@ class _InventoryItemEditScreenState extends State<InventoryItemEditScreen> {
                     sku: '',
                   ));
 
-      if (product.id == '') {
+      if (product.id == '0000000') {
         product =
             await productProv.fetchProduct(widget.inventoryItem.productId);
       }
+
+      product = await productProv.fetchProduct(widget.inventoryItem.productId);
 
       setState(() {
         _product = product;
@@ -175,22 +180,37 @@ class _InventoryItemEditScreenState extends State<InventoryItemEditScreen> {
           ),
         ),
         actions: [
-          ShadButton(
-            onPressed: () async {
-              if (formKey.currentState!.validate()) {
-                final updatedItem = _product!.createInventoryItem(
-                  initialStock: _quantity!,
-                  inventoryItemId: widget.inventoryItem.id,
-                  location: _location,
-                  expiryDate: hasExpiryDate ? expiryDate : null,
-                );
-                // await inventoryProv.updateInventoryItem(updatedItem);
-                await inventoryProv.updateItem(updatedItem);
-                Navigator.of(context).pop();
-              }
-            },
-            child: const Text('Update Item'),
-          ),
+                ShadButton(
+                  onPressed: () async {
+                    if (formKey.currentState!.validate()) {
+                      final updatedItem = _product!.createInventoryItem(
+                        initialStock: _quantity!,
+                        inventoryItemId: widget.inventoryItem.id,
+                        location: _location,
+                        expiryDate: hasExpiryDate ? expiryDate : null,
+                      );
+                      await inventoryProv.updateItem(updatedItem);
+
+                      // Update product quantity after updating inventory item
+                      final inventoryItems = inventoryProv.inventoryItems.where((i) => i.productId == _product!.id);
+                      final totalQuantity = inventoryItems.fold<double>(0, (sum, i) => sum + i.quantity);
+                      final updatedProduct = _product!.copyWith(stockQuantity: totalQuantity,);
+                      await context.read<ProductProvider>().updateProduct(_product!.id, updatedProduct);
+
+                      // Create transaction for inventory item update
+                      // await context.read<TransactionService>().createTransactionForInventoryItemCreation(
+                      //   inventoryItemId: updatedItem.id,
+                      //   businessId: _product!.businessId,
+                      //   productId: _product!.id,
+                      //   quantity: _quantity,
+                      //   notes: 'Inventory item updated with quantity $_quantity',
+                      // );
+
+                      Navigator.of(context).pop();
+                    }
+                  },
+                  child: const Text('Update Item'),
+                ),
         ],
         actionsPadding: EdgeInsets.only(left: 5.w),
         leading: ShadButton.ghost(

@@ -2,11 +2,14 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:shop_mate/core/error/error_toaster.dart';
+import 'package:shop_mate/core/utils/constants.dart';
 import 'package:shop_mate/data/models/inventory/inventory_item_model.dart';
 import 'package:shop_mate/data/models/inventory/inventory_model.dart';
 import 'package:shop_mate/services/business_service.dart';
 import 'package:shop_mate/services/firebase_CRUD_service.dart';
 import 'package:shop_mate/services/inventory_service.dart';
+import 'package:shop_mate/services/product_services.dart';
+import 'package:shop_mate/services/transaction_service.dart';
 
 class InventoryProvider extends ChangeNotifier {
   bool isLoading = false;
@@ -34,6 +37,9 @@ class InventoryProvider extends ChangeNotifier {
     return _inventoryStream!;
   }
 
+  Timer? _debounceTimer;
+  final Set<String> _pendingProductStockUpdates = {};
+
   void _createStream() {
     _inventoryStream = FirebaseCRUDService.ensureMainThreadStream(
         services.streamInventoryItems());
@@ -41,6 +47,23 @@ class InventoryProvider extends ChangeNotifier {
     _streamSub = _inventoryStream!.listen((items) {
       _inventory.items = items;
       notifyListeners();
+
+      // Collect productIds that need stock quantity update
+      for (var item in items) {
+        _pendingProductStockUpdates.add(item.productId);
+      }
+
+      // Debounce the stock quantity updates to batch them
+      _debounceTimer?.cancel();
+      _debounceTimer = Timer(Duration(milliseconds: 500), () async {
+        final productIdsToUpdate =
+            Set<String>.from(_pendingProductStockUpdates);
+        _pendingProductStockUpdates.clear();
+
+        for (var productId in productIdsToUpdate) {
+          await _updateProductStockQuantity(productId);
+        }
+      });
     }, onError: (error) {
       print('Inventory stream error: $error');
       _inventory.items = [];
@@ -98,6 +121,18 @@ class InventoryProvider extends ChangeNotifier {
     try {
       await Future(
           () => services.updateInventoryItem(update.id, update.toJson()));
+
+      // After updating inventory item, update product stock quantity
+      await _updateProductStockQuantity(update.productId);
+
+      // Create transaction for inventory item update
+      await _createTransactionForInventoryChange(
+        inventoryItemId: update.id,
+        productId: update.productId,
+        quantity: update.quantity,
+        notes: 'Inventory item updated',
+      );
+
       ErrorNotificationService.showErrorToaster(
         message: 'Successfully Updated Product',
       );
@@ -110,11 +145,29 @@ class InventoryProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> createInventoryItem(InventoryItem item) async {
+  Future<void> createInventoryItem(
+    InventoryItem item, {
+    bool isProductCreation = false,
+  }) async {
     isLoading = true;
     notifyListeners();
     try {
+      logger.d('ITem Being Created:\n ${item.toJson()}');
       await Future(() => services.createInventoryItem(item));
+
+      if (isProductCreation == false) {
+        // After creating inventory item, update product stock quantity
+        await _updateProductStockQuantity(item.productId);
+      }
+
+      // Create transaction for inventory item creation
+      // await _createTransactionForInventoryChange(
+      //   inventoryItemId: item.id,
+      //   productId: item.productId,
+      //   quantity: item.quantity,
+      //   notes: 'Inventory item created',
+      // );
+
       ErrorNotificationService.showErrorToaster(
         message: 'Successfully registered Product',
       );
@@ -134,9 +187,30 @@ class InventoryProvider extends ChangeNotifier {
     );
   }
 
-  void deleteInventoryItem(InventoryItem item) {
-    _inventory.removeItem(item.id, item.location!);
+  Future<void> deleteInventoryItem(InventoryItem item) async {
+    isLoading = true;
     notifyListeners();
+    try {
+      await services.deleteInventoryItem(item.id);
+
+      // After deleting inventory item, update product stock quantity
+      await _updateProductStockQuantity(item.productId);
+
+      final inventoryItemIndex =
+          _inventory.items.indexWhere((i) => i.id == item.id);
+      if (inventoryItemIndex != -1) {
+        _inventory.items.removeAt(inventoryItemIndex);
+      }
+      ErrorNotificationService.showErrorToaster(
+        message: 'Successfully deleted Inventory Item',
+      );
+    } catch (e) {
+      ErrorNotificationService.showErrorToaster(
+          message: e.toString(), isDestructive: true);
+    } finally {
+      isLoading = false;
+      notifyListeners();
+    }
   }
 
   /// Saves the Current State of the inventory to firebase
@@ -157,7 +231,7 @@ class InventoryProvider extends ChangeNotifier {
           ).toList()}');
       _inventory.items = response;
       // final response = await services.getInventoryTransactions(
-      //   BusinessStorage.getBusinessProfile()!.id,
+      //   BusinessService.instance.businessId,
       //   DateTime.now(),
       // );
       // _inventory = response;
@@ -173,10 +247,164 @@ class InventoryProvider extends ChangeNotifier {
     }
   }
 
-double getLocationStock(String location) {
-    // Filter inventory items by location and sum their quantities
-    final itemsAtLocation = _inventory.items.where((item) => item.location == location);
-    final totalQuantity = itemsAtLocation.fold<double>(0, (sum, item) => sum + item.quantity);
+  double getLocationStock(String location) {
+    final itemsAtLocation =
+        _inventory.items.where((item) => item.location == location);
+    final totalQuantity =
+        itemsAtLocation.fold<double>(0, (sum, item) => sum + item.quantity);
     return totalQuantity;
-}
+  }
+
+  Future<void> _updateProductStockQuantity(String productId) async {
+    try {
+      final productService = ProductServices();
+      final product = await productService.fetchProduct(productId);
+      if (product == null) {
+        throw Exception('Product not found');
+      }
+
+      final totalQuantity = _inventory.items
+          .where((item) => item.productId == productId)
+          .fold<double>(0, (sum, item) => sum + item.quantity);
+
+      logger.d('${inventoryItems.length}');
+
+      // Update product stock quantity
+      // is it possible to get the inventory items with the same product id of the product using the stream ?
+      // inventoryStream.listen((items) async {});
+      // inventoryStream.first.then((items) async {
+      //   final totalQuantity = items
+      //       .where((item) => item.productId == productId)
+      //       .fold<double>(0, (sum, item) => sum + item.quantity);
+      //   await productService
+      //       .updateProduct(productId, {'stockQuantity': totalQuantity});
+      //   ErrorNotificationService.showErrorToaster(
+      //     message: 'Successfully updated Product Stock Quantity',
+      //   );
+      // }).catchError((error) {
+      //   print('Error fetching inventory items: $error');
+      // }).whenComplete(() {
+      //   print('Stream completed');
+      // });
+
+      //       final totalQuantity = items
+      //     .where((item) => item.productId == productId)
+      //     .fold<double>(0, (sum, item) => sum + item.quantity);
+      await productService
+          .updateProduct(productId, {'stockQuantity': totalQuantity});
+      ErrorNotificationService.showErrorToaster(
+        message: 'Successfully updated Product Stock Quantity',
+      );
+
+      // await productService
+      //     .updateProduct(productId, {'stockQuantity': totalQuantity});
+    } catch (e) {
+      print('Error updating product stock quantity: $e');
+    }
+  }
+
+  Future<void> _createTransactionForInventoryChange({
+    required String inventoryItemId,
+    required String productId,
+    required double quantity,
+    required String notes,
+  }) async {
+    try {
+      final transactionService = TransactionService();
+      await transactionService.createTransactionForInventoryItemCreation(
+        businessId: BusinessService.instance.businessId!,
+        inventoryItemId: inventoryItemId,
+        productId: productId,
+        quantity: quantity,
+        notes: notes,
+      );
+    } catch (e) {
+      print('Error creating transaction: $e');
+    }
+  }
+
+  // double getLocationStock(String location) {
+  //   // Filter inventory items by location and sum their quantities
+  //   final itemsAtLocation =
+  //       _inventory.items.where((item) => item.location == location);
+  //   final totalQuantity =
+  //       itemsAtLocation.fold<double>(0, (sum, item) => sum + item.quantity);
+  //   return totalQuantity;
+  // }
+
+  // Future<void> _updateProductStockQuantity(String productId) async {
+  //   try {
+  //     final productService = ProductServices();
+  //     final product = await productService.fetchProduct(productId);
+  //     if (product == null) {
+  //       throw Exception('Product not found');
+  //     }
+  //     // Calculate total quantity from inventory items
+  //     final totalQuantity = _inventory.items
+  //         .where((item) => item.productId == productId)
+  //         .fold<double>(0, (sum, item) => sum + item.quantity);
+  //     // Update product stock quantity
+  //     await productService.updateProduct(productId, {'stockQuantity': totalQuantity});
+  //   } catch (e) {
+  //     print('Error updating product stock quantity: $e');
+  //   }
+  // }
+
+  // Future<void> _createTransactionForInventoryChange({
+  //   required String inventoryItemId,
+  //   required String productId,
+  //   required double quantity,
+  //   required String notes,
+  // }) async {
+  //   try {
+  //     // Import TransactionService at the top of the file
+  //     // import 'package:shop_mate/services/transaction_service.dart';
+  //     final transactionService = TransactionService();
+  //     await transactionService.createTransactionForInventoryItemChange(
+  //       inventoryItemId: inventoryItemId,
+  //       productId: productId,
+  //       quantity: quantity,
+  //       notes: notes,
+  //     );
+  //   } catch (e) {
+  //     print('Error creating transaction: $e');
+  //   }
+  // }
+
+//   Future<void> _updateProductStockQuantity(String productId) async {
+//     try {
+//       final productService = ProductServices();
+//       final product = await productService.fetchProduct(productId);
+//       if (product == null) {
+//         throw Exception('Product not found');
+//       }
+//       // Calculate total quantity from inventory items
+//       final totalQuantity = _inventory.items
+//           .where((item) => item.productId == productId)
+//           .fold<double>(0, (sum, item) => sum + item.quantity);
+//       // Update product stock quantity
+//       await productService.updateProduct(productId, {'stockQuantity': totalQuantity});
+//     } catch (e) {
+//       print('Error updating product stock quantity: $e');
+//     }
+//   }
+
+  // Future<void> _createTransactionForInventoryChange({
+  //   required String inventoryItemId,
+  //   required String productId,
+  //   required double quantity,
+  //   required String notes,
+  // }) async {
+  //   try {
+  //     final transactionService = TransactionService();
+  //     await transactionService.createTransactionForInventoryItemChange(
+  //       inventoryItemId: inventoryItemId,
+  //       productId: productId,
+  //       quantity: quantity,
+  //       notes: notes,
+  //     );
+  //   } catch (e) {
+  //     print('Error creating transaction: $e');
+  //   }
+  // }
 }

@@ -140,7 +140,9 @@ class ProductProvider extends ChangeNotifier {
         throw ProductException('Product with this name already exists',
             code: 'Product-Exists');
       }
+
       await _productService.saveProduct(product);
+      
       ErrorNotificationService.showErrorToaster(
         message: 'Successfully saved Product',
       );
@@ -187,13 +189,25 @@ class ProductProvider extends ChangeNotifier {
   }
 
   Future<void> deleteProduct(String productId) async {
+    _isLoading = true;
+    notifyListeners();
     try {
       await _productService.deleteProduct(productId);
+
       _allProducts.removeWhere((p) => p.id == productId);
       _currentPageProducts = _allProducts;
-      notifyListeners();
+      ErrorNotificationService.showErrorToaster(
+        message: 'Successfully Deleted Product',
+      );
+    } on Exception catch (e) {
+      ErrorNotificationService.showErrorToaster(
+          message: e.toString(), isDestructive: true);
     } catch (error) {
-      ErrorNotificationService.showErrorToaster(message: error.toString());
+      ErrorNotificationService.showErrorToaster(
+          message: error.toString(), isDestructive: true);
+    } finally {
+      _isLoading = false;
+      notifyListeners();
     }
   }
 }

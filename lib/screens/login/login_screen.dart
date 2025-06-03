@@ -64,24 +64,7 @@ class _LoginScreenState extends State<LoginScreen> {
     return ResponsiveLayout(
       mobile: Scaffold(body: _loginForms()),
       desktop: Scaffold(
-        body: Row(
-          children: [
-            Expanded(
-              flex: 3,
-              child: Center(
-                child: Icon(
-                  LucideIcons.shoppingBag,
-                  size: width(context, 0.1),
-                ),
-              ),
-            ),
-            ShadSeparator.vertical(),
-            Expanded(
-              flex: 2,
-              child: _loginForms(),
-            ),
-          ],
-        ),
+        body: _loginForms(),
       ),
     );
     // return ResponsiveLayout(

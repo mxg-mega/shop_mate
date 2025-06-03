@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:provider/provider.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 import 'package:shop_mate/core/utils/currency_formatter.dart';
 import 'package:shop_mate/data/models/products/product_model.dart';
+import 'package:shop_mate/providers/product_provider.dart';
 import 'package:shop_mate/screens/inventory/inventory_item_registration_screen.dart';
+import 'package:shop_mate/screens/products/product_edit_screen.dart';
+import 'package:shop_mate/screens/products/view_product_screen.dart';
 
 class ProductCard extends StatefulWidget {
   final Product product;
@@ -22,6 +26,7 @@ class _ProductCardState extends State<ProductCard> {
   @override
   Widget build(BuildContext context) {
     final theme = ShadTheme.of(context);
+    final productProv = Provider.of<ProductProvider>(context);
     return ShadCard(
       // elevation: 2,
       // shape: RoundedRectangleBorder(
@@ -38,18 +43,14 @@ class _ProductCardState extends State<ProductCard> {
                   borderRadius: const BorderRadius.vertical(
                     top: Radius.circular(8),
                   ),
-                  // image: DecorationImage(
-                  //   image: NetworkImage(product.imageUrl!),
-                  //   fit: BoxFit.cover,
-                  //   onError: (exception, stackTrace) => Center(
-                  //     child: Icon(LucideIcons.package,
-                  //         size: 24, color: theme.colorScheme.mutedForeground),
-                  //   ),
-                  // ),
                 ),
-                child: widget.product.imageUrl! == null
-                    ? Icon(LucideIcons.package,
-                        size: 24.w, color: theme.colorScheme.mutedForeground)
+                child: widget.product.imageUrl! == null ||
+                        widget.product.imageUrl!.isEmpty
+                    ? Center(
+                        child: Icon(LucideIcons.package,
+                            size: 24.w,
+                            color: theme.colorScheme.mutedForeground),
+                      )
                     : Image.network(
                         widget.product.imageUrl!,
                         fit: BoxFit.cover,
@@ -75,12 +76,12 @@ class _ProductCardState extends State<ProductCard> {
                           leading: Icon(LucideIcons.eye),
                           onTap: () {
                             popoverController.toggle();
-                            // Navigator.of(context).push(
-                            //   MaterialPageRoute(
-                            //     builder: (context) => ViewInventoryItemScreen(
-                            //         item: widget.item),
-                            //   ),
-                            // );
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    ViewProductScreen(product: widget.product),
+                              ),
+                            );
                           },
                         ),
                         ListTile(
@@ -89,6 +90,12 @@ class _ProductCardState extends State<ProductCard> {
                           onTap: () {
                             popoverController.toggle();
                             // Handle edit action
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    EditProductScreen(product: widget.product),
+                              ),
+                            );
                           },
                         ),
                         ListTile(
@@ -102,6 +109,45 @@ class _ProductCardState extends State<ProductCard> {
                                     InventoryItemRegistrationScreen(
                                   productId: widget.product.id,
                                 ),
+                              ),
+                            );
+                          },
+                        ),
+                        ListTile(
+                          leading: Icon(
+                            LucideIcons.trash2,
+                            size: 16,
+                            color: theme.colorScheme.destructive,
+                          ),
+                          title: Text('Delete Product',
+                              style: TextStyle(
+                                  color: theme.colorScheme.destructive)),
+                          onTap: () {
+                            popoverController.toggle();
+                            showShadDialog(
+                              context: context,
+                              builder: (context) => ShadDialog.alert(
+                                title: const Text('Delete Product'),
+                                description: const Text(
+                                    'Are you sure you want to delete this product?,'
+                                    '\nMake sure there are no inventory items or sales record Associated with this product.'),
+                                actions: [
+                                  ShadButton.outline(
+                                    onPressed: () {
+                                      Navigator.of(context).pop();
+                                    },
+                                    child: const Text('Cancel'),
+                                  ),
+                                  ShadButton.destructive(
+                                    onPressed: () async {
+                                      // Handle delete action
+                                      await productProv
+                                          .deleteProduct(widget.product.id);
+                                      Navigator.of(context).pop();
+                                    },
+                                    child: const Text('Delete'),
+                                  ),
+                                ],
                               ),
                             );
                           },

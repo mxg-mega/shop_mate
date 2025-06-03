@@ -1,3 +1,4 @@
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 import 'package:flutter/material.dart';
@@ -32,9 +33,20 @@ class _SignInPageState extends State<SignInPage> {
       padding: EdgeInsets.symmetric(horizontal: width(context, 0.02)),
       child: Center(
         child: ConstrainedBox(
-          constraints: BoxConstraints(maxWidth: width(context, 0.7)),
+          constraints: BoxConstraints(maxWidth: width(context, 0.5)),
           child: ShadCard(
-            padding: const EdgeInsets.all(8.0),
+            title: Text(
+              'Welcome Back',
+            ),
+            description: Text(
+              'Login to your Account',
+              style: ShadTheme.of(context)
+                  .textTheme
+                  .small
+                  .copyWith(fontWeight: FontWeight.normal),
+              textAlign: TextAlign.start,
+            ),
+            padding: EdgeInsets.all(8.0.w),
             child: ShadForm(
               key: _formKey,
               autovalidateMode: ShadAutovalidateMode.onUserInteraction,
@@ -90,10 +102,6 @@ class _SignInPageState extends State<SignInPage> {
                         ? null
                         : 'Password must be at least 8 characters',
                   ),
-                  // ShadButton(
-                  //   onPressed: () => _handleSignIn(context),
-                  //   child: const Text('Sign In'),
-                  // ),
                   Consumer<AuthenticationProvider>(
                     builder: (context, auth, _) {
                       return ShadButton(
@@ -107,9 +115,11 @@ class _SignInPageState extends State<SignInPage> {
                   ),
                   ShadButton.ghost(
                     onPressed: widget.onSwitch,
-                    child: const Text(
+                    child: Text(
                       'Don\'t have an Account ?! Sign Up here',
-                      softWrap: true,
+                      // softWrap: true,
+                      overflow: TextOverflow.ellipsis,
+                      style: ShadTheme.of(context).textTheme.small,
                     ),
                   )
                 ],

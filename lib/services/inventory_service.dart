@@ -17,11 +17,23 @@ class InventoryService {
   final InventoryCache _cache;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  InventoryService()
-      : _unitSystem =
-            BusinessService.instance.currentBusiness!.businessSettings?.unitSystem ?? UnitSystem.defaultSystem(),
+  static final InventoryService _instance = InventoryService._internal();
+
+  factory InventoryService() {
+    return _instance;
+  }
+  InventoryService._internal()
+      : _unitSystem = BusinessService
+                .instance.currentBusiness!.businessSettings?.unitSystem ??
+            UnitSystem.defaultSystem(),
         _repository = InventoryRepository(),
         _cache = InventoryCache();
+
+  // InventoryService()
+  //     : _unitSystem =
+  //           BusinessService.instance.currentBusiness!.businessSettings?.unitSystem ?? UnitSystem.defaultSystem(),
+  //       _repository = InventoryRepository(),
+  //       _cache = InventoryCache();
 
   Future<void> transferStock({
     required String productId,
@@ -88,8 +100,7 @@ class InventoryService {
 
     final updatedItem = item.copyWith(
       quantity: item.quantity + convertedAmount.toInt(),
-      status: InventoryItem.calculateStatus(
-          item.quantity + convertedAmount),
+      status: InventoryItem.calculateStatus(item.quantity + convertedAmount),
     );
     await _repository.updateInventoryItem(productId, updatedItem.toJson());
   }
@@ -108,8 +119,7 @@ class InventoryService {
 
     final updatedItem = item.copyWith(
       quantity: item.quantity - convertedAmount.toInt(),
-      status: InventoryItem.calculateStatus(
-          item.quantity - convertedAmount),
+      status: InventoryItem.calculateStatus(item.quantity - convertedAmount),
     );
     await _repository.updateInventoryItem(productId, updatedItem.toJson());
   }
@@ -170,8 +180,8 @@ class InventoryService {
     final transactionService = TransactionService();
     await transactionService.createTransactionForInventoryItemCreation(
       inventoryItemId: item.id,
-      businessId: item.businessId ?? '',
-      productId: item.productId ?? '',
+      businessId: item.businessId,
+      productId: item.productId,
       quantity: item.quantity,
       notes: item.notes,
     );

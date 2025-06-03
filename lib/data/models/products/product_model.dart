@@ -236,4 +236,44 @@ class Product extends BaseModel {
         createdAt: DateTime.tryParse(json['createdAt']),
         updatedAt: DateTime.tryParse(json['updatedAt'] ?? json['createdAt']),
       );
+
+  @override
+  @override
+  Product copyWith({
+    String? id,
+    String? name,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    String? businessId,
+    ProductCategory? category,
+    String? description,
+    double? salesPrice,
+    double? costPrice,
+    List<ProductUnit>? productUnits,
+    String? baseUnit,
+    double? stockQuantity,
+    String? imageUrl,
+    bool? isActive,
+    String? sku,
+    DateTime? expiryDate,
+  }) {
+    return Product(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      businessId: businessId ?? this.businessId,
+      category: category ?? this.category,
+      description: description ?? this.description,
+      salesPrice: salesPrice ?? this.salesPrice,
+      costPrice: costPrice ?? this.costPrice,
+      productUnits: productUnits ?? this.productUnits,
+      baseUnit: baseUnit ?? this.baseUnit,
+      stockQuantity: stockQuantity ?? this.stockQuantity,
+      imageUrl: imageUrl ?? this.imageUrl,
+      isActive: isActive ?? this.isActive,
+      sku: sku ?? this.sku,
+      expiryDate: expiryDate ?? this.expiryDate,
+    );
+  }
 }

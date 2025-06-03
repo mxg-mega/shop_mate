@@ -9,6 +9,7 @@ import 'package:shop_mate/data/models/transaction/transaction.dart';
 import 'package:shop_mate/providers/inventory_provider.dart';
 import 'package:shop_mate/data/models/inventory/inventory_item_model.dart';
 import 'package:shop_mate/providers/transaction_provider.dart';
+import 'package:shop_mate/screens/inventory/inventory_item_edit_screen.dart';
 
 class ViewInventoryItemScreen extends StatefulWidget {
   const ViewInventoryItemScreen({super.key, required this.item});
@@ -299,6 +300,20 @@ class _ViewInventoryItemScreenState extends State<ViewInventoryItemScreen> {
                       onPressed: () {
                         // Navigator.pushNamed(context, '/editProduct',
                         //     arguments: widget.productId);
+                        // Navigator.of(context).push(
+                        //   MaterialPageRoute(
+                        //     builder: (context) => InventoryItemEditScreen(
+                        //       inventoryItem: widget.item,
+                        //     ),
+                        //   ),
+                        // );
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => InventoryItemEditScreen(
+                              inventoryItem: widget.item,
+                            ),
+                          ),
+                        );
                       },
                       child: Text('Edit Product'),
                     ),
@@ -557,80 +572,6 @@ class _TransactionsTableState extends State<TransactionsTable> {
                           );
                         }),
                   ),
-        // ShadTable.list(
-        //     header: headers
-        //         .map(
-        //           (header) => ShadTableCell.header(
-        //             child: Text(header),
-        //           ),
-        //         )
-        //         .toList(),
-        //     columnSpanExtent: (index) {
-        //       if (index == 2) return const FixedTableSpanExtent(130);
-        //       if (index == 3) {
-        //         return const MaxTableSpanExtent(
-        //           FixedTableSpanExtent(120),
-        //           RemainingTableSpanExtent(),
-        //         );
-        //       }
-        //       // uses the default value
-        //       return null;
-        //     },
-        //     children: transactions!.map(
-        //       (transaction) {
-        //         return [
-        //           ShadTableCell(
-        //             child: Text(transaction.id),
-        //           ),
-        //           ShadTableCell(
-        //             child: Text(transaction.createdAt
-        //                 .toString()
-        //                 .split(' ')[0]),
-        //           ),
-        //           ShadTableCell(
-        //             child: Text(transaction.transactionsType.name),
-        //           ),
-        //           ShadTableCell(
-        //             child: Text(transaction.quantity.toString()),
-        //           ),
-        //           ShadTableCell(
-        //             child: Text(transaction.productId.toString()),
-        //           ),
-        //         ];
-        //       },
-        //     ),
-        //   ),
-        // : ShadTable(
-        //     columnCount: headers.length,
-        //     rowCount: transactions!.length,
-        //     header: (context, columnIndex) {
-        //       return ShadTableCell.header(
-        //         child: Text(
-        //           headers[columnIndex],
-        //           style: theme.textTheme.small.copyWith(
-        //             fontWeight: FontWeight.normal,
-        //           ),
-        //         ),
-        //       );
-        //     },
-        //     builder: (context, index) {
-        //       final transaction = transactions![index.row];
-        //       return ShadTableCell(
-        //         child: Column(
-        //           mainAxisSize: MainAxisSize.min,
-        //           children: [
-        //             Text(transactions![index.column].id),
-        //             Text(transactions![index.column].createdAt.toString()),
-        //             Text(transactions![index.column].transactionsType.name),
-        //             // Text(transaction.quantity.toString()),
-        //             // // Text(formatPrice(price: transaction.totalPrice)),
-        //             // Text(transaction.notes ?? 'N/A'),
-        //           ],
-        //         ),
-        //         // child: Text(transaction.name),
-        //       );
-        //   },
-        // ),
       ],
     );
   }

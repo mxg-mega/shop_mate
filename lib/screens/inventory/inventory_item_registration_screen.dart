@@ -1,4 +1,7 @@
 import 'dart:async';
+import 'package:shop_mate/providers/transaction_provider.dart';
+import 'package:shop_mate/services/transaction_service.dart';
+
 import 'widgets/location_selector_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -136,6 +139,7 @@ class _InventoryItemRegistrationScreenState
   Widget build(BuildContext context) {
     final inventoryProv = Provider.of<InventoryProvider>(context);
     final productProv = Provider.of<ProductProvider>(context);
+    final transactProv = Provider.of<TransactionProvider>(context);
     final biz = BusinessService.instance.currentBusiness!;
     final theme = ShadTheme.of(context);
 
@@ -272,7 +276,6 @@ class _InventoryItemRegistrationScreenState
                             : null,
                         onPressed: () async {
                           if (formKey.currentState!.validate()) {
-                            // Handle form submission
                             final item = _product!.createInventoryItem(
                               initialStock: _quantity!,
                               inventoryItemId: InventoryRepository()
@@ -283,10 +286,29 @@ class _InventoryItemRegistrationScreenState
                             );
                             logger.d('Item: ${item.toJson()}');
                             await inventoryProv.createInventoryItem(item);
-                            // inventoryProv.registerInventoryItem(
+
+                            // Update product quantity after creating inventory item
+                            final inventoryItems = inventoryProv.inventoryItems
+                                .where((i) => i.productId == _product!.id);
+                            final totalQuantity = inventoryItems.fold<double>(
+                                0, (sum, i) => sum + i.quantity);
+                            final updatedProduct = _product!
+                                .copyWith(stockQuantity: totalQuantity);
+                            await productProv.updateProduct(
+                                _product!.id, updatedProduct);
+
+                            // // Create transaction for inventory item creation
+                            // final transactionService = TransactionService();
+                            // await transactionService
+                            //     .createTransactionForInventoryItemCreation(
+                            //   inventoryItemId: item.id,
+                            //   businessId: _product!.businessId,
                             //   productId: _product!.id,
-                            //   location: _locationController.text,
+                            //   quantity: _quantity,
+                            //   notes:
+                            //       'Inventory item created with quantity $_quantity',
                             // );
+
                             Navigator.of(context).pop();
                           }
                         },

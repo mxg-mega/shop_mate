@@ -24,7 +24,10 @@ class _ProductsScreenState extends State<ProductsScreen> {
     // final productProvider = context.read<ProductProvider>();
     final productProvider =
         Provider.of<ProductProvider>(context, listen: false);
-    productProvider.fetchInitialProducts();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await productProvider.fetchInitialProducts();
+    });
     _scrollController.addListener(_scrollListener);
   }
 

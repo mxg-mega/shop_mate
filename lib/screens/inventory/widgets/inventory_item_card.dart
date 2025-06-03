@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:provider/provider.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 import 'package:shop_mate/core/utils/currency_formatter.dart';
 import 'package:shop_mate/data/models/inventory/inventory_item_model.dart';
 import 'package:shop_mate/data/models/inventory/inventory_model.dart';
+import 'package:shop_mate/providers/inventory_provider.dart';
+import 'package:shop_mate/screens/inventory/inventory_item_edit_screen.dart';
 import 'package:shop_mate/screens/inventory/view_inventory_item_screen.dart';
 import 'package:shop_mate/screens/products/view_product_screen.dart';
 
@@ -33,6 +36,7 @@ class _ProductCardState extends State<InventoryItemCard> {
     final theme = ShadTheme.of(context);
     final screenWidth = MediaQuery.of(context).size.width;
     final isSmallScreen = screenWidth < 600;
+    final inventoryProv = Provider.of<InventoryProvider>(context, listen: false);
 
     return ShadCard(
       padding: EdgeInsets.all(0),
@@ -83,13 +87,6 @@ class _ProductCardState extends State<InventoryItemCard> {
                             : widget.item.status == InventoryStatus.lowStock
                                 ? Colors.yellow[600]
                                 : Colors.green,
-                        // color: theme.colorScheme.muted,
-                        // backgroundColor:
-                        //     widget.item.status == InventoryStatus.outOfStock
-                        //         ? theme.colorScheme.destructive
-                        //         : widget.item.status == InventoryStatus.lowStock
-                        //             ? Colors.yellow
-                        //             : Colors.green,
                       ),
                     ),
                   ),
@@ -125,6 +122,55 @@ class _ProductCardState extends State<InventoryItemCard> {
                             onTap: () {
                               popoverController.toggle();
                               // Handle edit action
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (context) => InventoryItemEditScreen(
+                                    inventoryItem: widget.item,
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                          ListTile(
+                            leading: Icon(
+                              LucideIcons.trash2,
+                              size: 16,
+                              color: theme.colorScheme.destructive,
+                            ),
+                            title: Text('Delete Product',
+                                style: TextStyle(
+                                  color: theme.colorScheme.destructive,
+                                )),
+                            onTap: () {
+                              popoverController.toggle();
+                              // Handle edit action
+                              showShadDialog(
+                                context: context,
+                                builder: (context) => ShadDialog.alert(
+                                  title: const Text('Delete Product'),
+                                  description: const Text(
+                                      'Are you sure you want to delete this product?'),
+                                  // content: const Text(
+                                  //     'Are you sure you want to delete this product?'),
+                                  actions: [
+                                    ShadButton.outline(
+                                      onPressed: () {
+                                        Navigator.of(context).pop();
+                                      },
+                                      child: const Text('Cancel'),
+                                    ),
+                                    ShadButton.destructive(
+                                      onPressed: () async {
+                                        // Handle delete action
+                                        await inventoryProv
+                                            .deleteInventoryItem(widget.item);
+                                        Navigator.of(context).pop();
+                                      },
+                                      child: const Text('Delete'),
+                                    ),
+                                  ],
+                                ),
+                              );
                             },
                           ),
                         ],
@@ -188,7 +234,6 @@ class _ProductCardState extends State<InventoryItemCard> {
                   SizedBox(height: 6.h),
                   // Stock Info
                   ShadBadge.secondary(
-                    
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [

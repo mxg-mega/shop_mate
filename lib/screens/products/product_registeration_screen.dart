@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
+import 'package:shop_mate/core/error/error_toaster.dart';
 import 'package:shop_mate/core/utils/constants.dart';
 import 'package:shop_mate/data/datasource/local/business_storage.dart';
 import 'package:shop_mate/data/datasource/repositories/inventory_repository.dart';
@@ -452,7 +453,6 @@ class _RegisterProductScreenState extends State<RegisterProductScreen> {
                                   .unit
                                   .name,
                               businessId: authProv.currentBusiness!.id,
-                              // BusinessStorage.getBusinessProfile()!.id,
                               name: _nameController.text,
                               id: const Uuid().v4(),
                               costPrice:
@@ -476,13 +476,13 @@ class _RegisterProductScreenState extends State<RegisterProductScreen> {
                               updatedAt: DateTime.now(),
                             );
                             logger.d('New Product : ${newProduct.toJson()}');
-                            WidgetsBinding.instance.addPostFrameCallback((_) {
-                              setState(() {
-                                _registeredProduct = newProduct;
-                                logger.d(
-                                    'Registered Product : ${_registeredProduct?.toJson()}');
-                              });
-                            });
+                            // WidgetsBinding.instance.addPostFrameCallback((_) {
+                            //   setState(() {
+                            //     _registeredProduct = newProduct;
+                            //     logger.d(
+                            //         'Registered Product : ${_registeredProduct?.toJson()}');
+                            //   });
+                            // });
                             final newItem2 = newProduct.createInventoryItem(
                               location: _locationController.text.isEmpty
                                   ? 'Store'
@@ -503,23 +503,23 @@ class _RegisterProductScreenState extends State<RegisterProductScreen> {
                                 '=====================NEW ITEM++++++++++++++\n${newItem2.toJson()}');
                             try {
                               await provider.saveProduct(newProduct);
-                              await inventoryProvider
-                                  .createInventoryItem(newItem2);
+
+                              await inventoryProvider.createInventoryItem(
+                                  newItem2,
+                                  isProductCreation: true);
                             } catch (e) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                    content:
-                                        Text('Failed to register product')),
+                              ErrorNotificationService.showErrorToaster(
+                                message: 'Failed to register product',
+                                isDestructive: true,
                               );
                             }
                             // provider.addInventory(newItem2);
                             Navigator.of(context).pop();
                           } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                  content:
-                                      Text('Failed to validate registration')),
-                            );
+                            ErrorNotificationService.showErrorToaster(
+                                message: 'Failed to validate registration',
+                                isDestructive: true,
+                              );
                             return;
                           }
                         },
